@@ -2,6 +2,8 @@
 
 CC = gcc
 CFLAGS = -nostdlib -fno-builtin -fno-stack-protector -m32
+AS = nasm
+ASFLAGS = -f elf
 LD = ld
 
 COMMON = Makefile
@@ -19,8 +21,8 @@ all : $(IMG) $(COMMON)
 
 $(IPL): $(IPL_SRC) $(IPL_LDS)
 	mkdir -p $(TARGET_DIR)
-	$(CC) -c $(CFLAGS) -o $@.o -T $(IPL_LS) $(IPL_SRC)
-	$(CC) $(CFLAGS) -o $@ -T $(IPL_LS) $(IPL_SRC)
+	$(AS) $(ASFLAGS) -o $@.o $(IPL_SRC)
+	$(LD) -m elf_i386 -T $(IPL_LS) -o $@ $@.o
 
 $(IMG): $(IPL)
 	mformat -f 1440 -B $(IPL) -C -i $@ ::
