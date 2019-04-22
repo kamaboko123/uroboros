@@ -1,5 +1,7 @@
 BITS 16
 
+READ_TRACKS EQU 10
+
 ;jmp to IPL(generary : EB 3E)
 jmp entry
 DB   0x90
@@ -36,19 +38,84 @@ putloop:
     mov al, [si]
     add si, 1
     cmp al, 0
-    je fin
+    je load_osl
     
     mov ah, 0x0e
     mov bx, 15
     int 0x10
     jmp putloop
 
+;とりあえず34セクタまで読みたい
+load_osl:
+    ;bufferの初期位置(0x7e00に置きたいので、esは0x7e00/16 = 0x07e0する)
+    mov ax, 0x07e0
+    mov es, ax
+    mov cl, 1 ; ttssssss t:トラック上位2bit(1始まり) s:セクタ(1始まり)
+    mov dh, 0 ; ヘッド(0始まり)
+    mov ch, 0 ; トラック下位8bit
+    
+osl_read_loop:
+    mov bx, 0
+    mov ah, 0x2 ;読み込み
+    mov al, 1 ; 読み込むセクタ数
+    mov dl, 0 ; ドライブ番号(A)
+    
+    int 0x13
+    jc error
+    
+    ;0x0200足してbufferを512byteすすめる(esに入れた値の16倍されるので、esに足すのは0x20)
+    mov ax, es
+    add ax, 0x0020
+    mov es, ax
+    
+    ;1セクタ分進める
+    add cl, 1
+    
+    ;18以下なら次を読む
+    cmp cl, 18
+    jbe osl_read_loop
+    
+    mov cl, 1 ; セクタを戻す
+    add dh, 1 ; ヘッド
+    cmp dh, 2
+    jb osl_read_loop ; 2未満なら次
+    
+    mov dh, 0 ;ヘッドを戻す
+    add ch, 1 ;トラック
+    cmp ch, READ_TRACKS
+    jb osl_read_loop
+    
+    ;コピー先は0x7e00(0x7c00 - 0x7dffはブートセクタがロードされている)から
+    ;boot.binが置かれる位置は0x4200(FAT12の最初のデータ格納位置)である
+    ;0x7e00 + 0x4200 = 0xc000
+    jmp 0xc000
+
+error:
+    mov si, err_msg
+error_loop:
+    mov al, [si]
+    add si, 1
+    cmp al, 0
+    je fin
+    
+    mov ah, 0x0e
+    mov bx, 15
+    int 0x10
+    jmp error_loop
+   
+
 fin:
     hlt
     jmp fin
 
+buf:
+    DB 0x00
+
 msg:
-    DB `\nhello, world\n\n\0`
+    DB `\r\nIPL running!\r\nstart to copy 2nd stage bootloader to memory...\r\n\r\n\0`
+
+err_msg:
+    DB `error\0`
 
 ;end of boot sector(must be 0x55, 0xaa)
 TIMES 0x01fe-($-$$) DB 0

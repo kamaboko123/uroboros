@@ -9,9 +9,16 @@ LD = ld
 COMMON = Makefile
 
 TARGET_DIR = bin
+
+#IPL
 IPL = $(TARGET_DIR)/ipl.bin
 IPL_SRC = ipl.s
 IPL_LS = ipl.lds
+
+#boot loader
+OSL = $(TARGET_DIR)/boot.bin
+OSL_SRC = boot.s
+OSL_LS = boot.lds
 
 IMG = $(TARGET_DIR)/uroboros.img
 
@@ -24,8 +31,14 @@ $(IPL): $(IPL_SRC) $(IPL_LDS)
 	$(AS) $(ASFLAGS) -o $@.o $(IPL_SRC)
 	$(LD) -m elf_i386 -T $(IPL_LS) -o $@ $@.o
 
-$(IMG): $(IPL)
+$(OSL) : $(OSL_SRC) $(OSL_LDS)
+	mkdir -p $(TARGET_DIR)
+	$(AS) $(ASFLAGS) -o $@.o $(OSL_SRC)
+	$(LD) -m elf_i386 -T $(OSL_LS) -o $@ $@.o
+
+$(IMG): $(IPL) $(OSL)
 	mformat -f 1440 -B $(IPL) -C -i $@ ::
+	mcopy $(OSL) -i $@ ::
 
 run: $(IMG)
 	$(QEMU) -drive format=raw,file=$(IMG),if=floppy
