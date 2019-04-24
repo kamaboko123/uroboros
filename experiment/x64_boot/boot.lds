@@ -1,6 +1,6 @@
 OUTPUT_FORMAT("binary");
 
 SECTIONS {
-    . = 0xc000;
+    . = 0x0000;
 }
 
