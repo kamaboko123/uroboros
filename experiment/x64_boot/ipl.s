@@ -87,10 +87,7 @@ osl_read_loop:
     ;コピー先は0x7e00(0x7c00 - 0x7dffはブートセクタがロードされている)から
     ;boot.binが置かれる位置は0x4200(FAT12の最初のデータ格納位置)である
     ;0x7e00 + 0x4200 = 0xc000
-    mov ax, 0x0c00
-    mov cs, ax
-    mov es, ax
-    jmp 0x0000
+    jmp 0xc000
 
 error:
     mov si, err_msg

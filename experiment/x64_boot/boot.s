@@ -11,7 +11,6 @@ init_sp:
 boot:
     mov si, msg
     call bios_putstr
-    jmp fin
     
 enable_a20:
     ;A20ライン有効化
@@ -57,18 +56,15 @@ a20_enabled:
     mov si, msg_a20_4
     call bios_putstr
 init_gdt:
-    ;GDT設定
     mov si, msg_gdt_0
     call bios_putstr
-    
+    jmp fin
+    ;GDT設定
+
 enable_protect_mode:
     ;CR0設定(プロテクトモード)
     
-    jmp pipeline_flush
-
-;ここからプロテクトモード(32bit)
-pipeline_flush:
-    BITS 32
+    jmp entry_protect_mode
 
 fin:
     hlt
@@ -77,9 +73,9 @@ fin:
 msg_a20_0:
     DB `!BOOT! A20 Line\r\n\0`
 msg_a20_1:
-    DB `BIOS support enable A20 by INT 15h.\r\n\0`
+    DB ` BIOS support enable A20 by INT 15h.\r\n\0`
 msg_a20_2:
-    DB `Success to get A20 status : \0`
+    DB ` Success to get A20 status : \0`
 msg_a20_3:
     DB `Disable\r\n Try to enable A20 Line.\r\n\0`
 msg_a20_4:
@@ -112,4 +108,9 @@ msg_error_a20:
 
 msg:
     DB `!BOOT! start 2nd stage bootloader\r\n\0`
+
+
+;ここからプロテクトモード(32bit)
+entry_protect_mode:
+    BITS 32
 
