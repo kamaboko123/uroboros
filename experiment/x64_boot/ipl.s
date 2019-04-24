@@ -45,7 +45,6 @@ putloop:
     int 0x10
     jmp putloop
 
-;とりあえず34セクタまで読みたい
 load_osl:
     ;bufferの初期位置(0x7e00に置きたいので、esは0x7e00/16 = 0x07e0する)
     mov ax, 0x07e0
