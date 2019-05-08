@@ -1,12 +1,12 @@
 # Makefile
 
 CC = gcc
-CFLAGS = -nostdlib -fno-builtin -fno-stack-protector -m32 -O0
+CFLAGS = -nostdlib -fno-builtin -fno-stack-protector -m32 -O0 -Wall -std=c11
 AS = nasm
 ASFLAGS = -f elf
 LD = ld
 
-COMMON = Makefile
+INCLUDE = -I ./
 
 TARGET_DIR = bin
 
@@ -26,11 +26,18 @@ KERNEL_SRC = kernel.c
 KERNEL_LS = kernel.lds
 KERNEL_ENTRY = Main
 
+ASM_LIB =  $(TARGET_DIR)/asmlib.o
+ASM_LIB_SRC = asmlib.s
+
+FONT_DIR = font
+FONT = $(FONT_DIR)/bin/hankaku.o
+
+
 IMG = $(TARGET_DIR)/uroboros.img
 
 QEMU = qemu-system-x86_64
 
-all : $(IMG) $(COMMON)
+all : clean $(IMG)
 
 $(IPL): $(IPL_SRC) $(IPL_LDS)
 	mkdir -p $(TARGET_DIR)
@@ -42,10 +49,17 @@ $(OSL) : $(OSL_SRC) $(OSL_LDS)
 	$(AS) $(ASFLAGS) -o $@.o $(OSL_SRC)
 	$(LD) -m elf_i386 -T $(OSL_LS) -o $@ $@.o
 
-$(KERNEL): $(KERNEL_SRC) $(KERNEL_LDS)
+$(ASM_LIB) : $(ASM_LIB_SRC)
+	$(AS) $(ASFLAGS) -o $@ $<
+
+$(FONT) :
+	cd $(FONT_DIR); make
+
+$(KERNEL): $(KERNEL_SRC) $(ASM_LIB) $(FONT) $(KERNEL_LDS)
 	mkdir -p $(TARGET_DIR)
 	$(CC) -c $(CFLAGS) -o $@.o $(KERNEL_SRC)
-	$(LD) -m elf_i386 -e $(KERNEL_ENTRY) -T $(KERNEL_LS) -o $@.bin $@.o
+	$(CC) -c $(CFLAGS) -o $(TARGET_DIR)/graphic.o graphic.c
+	$(LD) -m elf_i386 -e $(KERNEL_ENTRY) -T $(KERNEL_LS) -Map $@.bin.map -o $@.bin $@.o  $(TARGET_DIR)/graphic.o $(ASM_LIB) $(FONT)
 	cat $(OSL) $@.bin > $@
 
 $(IMG): $(IPL) $(OSL) $(KERNEL)

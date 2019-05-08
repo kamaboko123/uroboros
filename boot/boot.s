@@ -1,5 +1,7 @@
 [BITS 16]
 
+KERNEL_SIZE EQU 1024 * 512
+
 ;ブート中の仮SS
 ;フロッピーの読み込みはESを0x29ずつ加算して読んでいったので、ESの値をSSに代入して、フロッピーの中身の後ろから8KBをstackにする
 ;0x7e00から10トラック分ロードしたとしたら(0x7e00 + (512*18*10)) + 64 * 1024 = 0x2e600
@@ -96,7 +98,7 @@ entry_protect_mode:
 
     mov esi, kernel
     mov edi, 0x00100000
-    mov ecx, 16
+    mov ecx, KERNEL_SIZE/4
     call memcpy
 
 protect_hlt:
@@ -157,7 +159,7 @@ msg:
     DB `!BOOT! start 2nd stage bootloader\r\n\0`
 
 
-alignb 16
+align 16
 GDT0:
     DW 0x0000
     DW 0x0000
@@ -186,7 +188,7 @@ GDT0:
     ;DB 0x00 ; Base Address Hi
     
 
-alignb 16
+align 16
 GDT:
     DW 8*3-1 ;GDTのサイズ - 1 [byte]
     DD GDT0
