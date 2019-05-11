@@ -1,4 +1,5 @@
 #include "graphic.h"
+unsigned char *vram = (unsigned char *)VRAM_ADDR;
 
 void init_palette(void){
     static unsigned char table_rgb[16 * 3] = {
@@ -53,19 +54,16 @@ void init_screen(unsigned int color){
 }
 
 void print_asc(int pos_x, int pos_y, unsigned char color, char *s){
+    extern unsigned char hankaku[4096];
     for(int i = 0; s[i] != '\0'; i++){
-        put_font_asc(pos_x + i * 8, pos_y, color, s[i]);
+        put_font_asc(pos_x + i * 8, pos_y, color, (hankaku + s[i] * 16));
     }
 }
 
-void put_font_asc(int pos_x, int pos_y, unsigned char color, char c){
-    extern unsigned char hankaku[4096];
-    unsigned char *font = (unsigned char *)(hankaku + c * 16);
-    unsigned char *vram = (unsigned char *)VRAM_ADDR;
-    
-    for(int y = pos_y; y < pos_y + 16; y++){
-        unsigned char d = font[y];
-        unsigned char *p = vram + (pos_y + y) * SCREEN_XSIZE + pos_x;
+void put_font_asc(int pos_x, int pos_y, unsigned char color, unsigned char *font){
+    for(int i = 0; i < 16; i++){
+        unsigned char *p = vram + (pos_y + i) * SCREEN_XSIZE + pos_x;
+        unsigned char d = font[i];
         if((d & 0x80) != 0) p[0] = color;
         if((d & 0x40) != 0) p[1] = color;
         if((d & 0x20) != 0) p[2] = color;

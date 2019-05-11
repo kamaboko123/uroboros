@@ -6,8 +6,11 @@
 0x030600 - 0x0306ff : boot info
 
 0x031000 - 0x031fff : pdt(4*1024 = 4096byte)
-0x032000 - 0x032fff : pt0(4*1024*8 = 4096byte) とりあえずページテーブル8個分
+0x032000 - 0x032fff : pt0(4*1024*8) とりあえずページテーブル8個分
+
+0x000A0000 - 0x000af9ff : vram
 
 0x00100000 - 0x002fffff : initial kernel code
 0x00300000 - 0x003fffff : main kernel code
 0x0030ffff : kernel stack(仮)
+

@@ -61,6 +61,7 @@ void Main(void){
     
     //unsigned int kernel_pde_index = (KERNEL_ADDR & PD_PDE_INDEX) >> 22;
     unsigned int kernel_pte_index = (KERNEL_ADDR & PT_PTE_INDEX) >> 12;
+    unsigned int vram_pte_index = (VRAM_ADDR & PT_PTE_INDEX) >> 12;
     
     PTE *page_table = (PTE *)PT0_ADDR;
     
@@ -69,27 +70,30 @@ void Main(void){
     //(Pフラグを立てて置かないと、物理メモリに存在しないと解釈されてページフォールトが発生するので立てておく)
     set_pde((PDE *)PDT_ADDR, PT0_ADDR, PDE_P | PDE_RW);
     
-    /*
     //ページテーブルの設定
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
-    for(int i = 0; i < 1024; i++){
-        //set_pte(((PTE *)PT0_ADDR) + i, PG_KERNEL_ADDR + (0x1000 * i), PTE_P | PTE_RW);
-        set_pte(&page_table[i], PG_KERNEL_ADDR + (0x1000 * i), PTE_P | PTE_RW);
+    for(int i = 0; i < 32; i++){
+        set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + i, PG_KERNEL_ADDR + (0x1000 * i), PTE_P | PTE_RW);
     }
-    */
-    set_pte(((PTE *)PT0_ADDR) + kernel_pte_index, PG_KERNEL_ADDR, PTE_P | PTE_RW);
-    set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + 1, PG_KERNEL_ADDR + 0x1000, PTE_P | PTE_RW);
+    for(int i = 0; i < 160; i++){
+        set_pte(((PTE *)PT0_ADDR) + vram_pte_index + i, VRAM_ADDR + (0x1000 * i), PTE_P | PTE_RW);
+    }
+    
+    //set_pte(((PTE *)PT0_ADDR) + kernel_pte_index, PG_KERNEL_ADDR, PTE_P | PTE_RW);
+    //set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + 1, PG_KERNEL_ADDR + 0x1000, PTE_P | PTE_RW);
+    //set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + 2, PG_KERNEL_ADDR + 0x2000, PTE_P | PTE_RW);
     //カーネルの再配置
     for(int i = 0; i < (1024 * 4 * 1024); i++){
         pg_kernel[i] = kernel[i];
     }
+    
     
     //ページングの有効化
     //CR3にページングテーブルのアドレスをストア
     //CR0のPGフラグを立てる
     enable_paging(PDT_ADDR);
     
-    for(;;) io_hlt();
+    //for(;;) io_hlt();
     
     //ページングが有効になったのでここから仮想アドレスを使用していく
     init_palette();
@@ -97,14 +101,16 @@ void Main(void){
     
     //white
     //put_font_asc(0, 0, 7, 'H');
-    //print_asc(0, 0, 7, "Hello, World! [Uroboros]");
+    print_asc(0, 0, 7, "Welcome to UroborOS!");
     
     if((load_cr0() & 0x80000000) != 0){
-        print_asc(0, 0, 7, "paging is enable!");
+        print_asc(0, 16, 7, "paging is enable!");
     }
     else{
-        print_asc(0, 0, 7, "paging is disable!");
+        print_asc(0, 16, 7, "paging is disable!");
     }
+    
+    for(;;) io_hlt();
 }
 
 void set_pte(PTE *pte, unsigned int addr, unsigned int flags){

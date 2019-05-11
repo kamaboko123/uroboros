@@ -66,7 +66,7 @@ $(IMG): $(IPL) $(OSL) $(KERNEL)
 	mformat -f 1440 -B $(IPL) -C -i $@ ::
 	mcopy $(KERNEL) -i $@ ::
 
-run: $(IMG)
+run: all
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy
 debug: $(IMG)
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -gdb tcp::10000 -S
