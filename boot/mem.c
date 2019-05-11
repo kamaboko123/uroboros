@@ -13,7 +13,6 @@ void set_pte_flag(PTE *pte, unsigned int flags){
 
 void set_pde(PDE *pde, unsigned int addr, unsigned int flags){
     *pde = 0;
-    *pde |= flags;
     *pde |= (addr & PDE_PT_ADDR);
     *pde |= flags;
 }

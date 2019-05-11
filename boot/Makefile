@@ -67,9 +67,9 @@ $(IMG): $(IPL) $(OSL) $(KERNEL)
 	mcopy $(KERNEL) -i $@ ::
 
 run: $(IMG)
-	$(QEMU) -drive format=raw,file=$(IMG),if=floppy
+	$(QEMU) -m 108M -drive format=raw,file=$(IMG),if=floppy
 debug: $(IMG)
-	$(QEMU) -drive format=raw,file=$(IMG),if=floppy -gdb tcp::10000 -S
+	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -gdb tcp::10000 -S
 
 clean:
 	rm -rf $(TARGET_DIR)

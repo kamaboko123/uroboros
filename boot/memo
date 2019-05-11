@@ -4,10 +4,10 @@
 0x007e00 - 0x02e5ff : フロッピーの中身(10トラック分)
 0x02e600 - 0x0305ff : headのスタック(8KB)
 0x030600 - 0x0306ff : boot info
+
 0x031000 - 0x031fff : pdt(4*1024 = 4096byte)
 0x032000 - 0x032fff : pt0(4*1024*8 = 4096byte) とりあえずページテーブル8個分
 
-ここから32bit
 0x00100000 - 0x002fffff : initial kernel code
-0x00030000 - 0x004fffff : main kernel code
-
+0x00300000 - 0x003fffff : main kernel code
+0x00030fff : kernel stack(仮)
