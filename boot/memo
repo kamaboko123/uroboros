@@ -10,4 +10,4 @@
 
 0x00100000 - 0x002fffff : initial kernel code
 0x00300000 - 0x003fffff : main kernel code
-0x00030fff : kernel stack(仮)
+0x0030ffff : kernel stack(仮)

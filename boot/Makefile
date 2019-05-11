@@ -21,7 +21,7 @@ OSL_SRC = boot.s
 OSL_LS = boot.lds
 
 #kernel
-KERNEL = $(TARGET_DIR)/kenel.sys
+KERNEL = $(TARGET_DIR)/kernel.sys
 KERNEL_SRC = kernel.c
 KERNEL_LS = kernel.lds
 KERNEL_ENTRY = Main
@@ -67,7 +67,7 @@ $(IMG): $(IPL) $(OSL) $(KERNEL)
 	mcopy $(KERNEL) -i $@ ::
 
 run: $(IMG)
-	$(QEMU) -m 108M -drive format=raw,file=$(IMG),if=floppy
+	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy
 debug: $(IMG)
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -gdb tcp::10000 -S
 

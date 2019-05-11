@@ -41,14 +41,12 @@ global enable_paging
 enable_paging:
     cli
     mov ecx, [esp]
-    ;mov dword [0x004fffff], eax
-    ;mov eax, 0x004ffff0
-    ;mov esp, eax
     mov eax, [esp + 4]
     mov cr3, eax
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
+    mov esp, 0x00101f00
     jmp ecx
 
 ;int load_cr0(void)
