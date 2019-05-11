@@ -100,10 +100,9 @@ entry_protect_mode:
     mov edi, 0x00100000
     mov ecx, KERNEL_SIZE/4
     call memcpy
-
-protect_hlt:
-    ;hlt
-    ;jmp protect_hlt
+    
+    ;mov dword [0x00030600], kernel
+    
     jmp dword 2*8:0x00100000
 
 memcpy: ;esiのアドレスからediのアドレスにコピー 4byteずつecx回コピー
