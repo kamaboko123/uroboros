@@ -30,10 +30,8 @@ ASMLIB = $(TARGET_DIR)/asmlib.o
 ASMLIB_SRC = kernel/asm/asmlib.s
 
 KERNEL = $(TARGET_DIR)/kernel.bin
+KERNEL_MEMMAP = $(TARGET_DIR)/kernel.map
 IMG = $(TARGET_DIR)/uroboros.img
-
-KERNEL_MAIN = $(TARGET_DIR)/main.o
-KERNEL_MAIN_SRC = main.c
 
 KERNEL_IMG = $(TARGET_DIR)/kernel.sys
 
@@ -61,14 +59,11 @@ $(TARGET_DIR)/%.o : $(KERNEL_SRC_DIR)/%.c
 	mkdir -p $(TARGET_DIR)
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $^
 
-$(KERNEL) : $(KERNEL_OBJ) $(ASMLIB) $(FONT) $(KERNEL_MAIN)
-	$(LD) $(LDFLAGS) -T$(KERNEL_LS) -o $@ $(KERNEL_MAIN) $(KERNEL_OBJ) $(ASMLIB) $(FONT)
+$(KERNEL) : $(KERNEL_OBJ) $(ASMLIB) $(FONT)
+	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $@ $(KERNEL_OBJ) $(ASMLIB) $(FONT)
 
 $(KERNEL_IMG) : $(KERNEL) $(OSL)
 	cat $(OSL) $(KERNEL) > $@
-
-$(KERNEL_MAIN): $(KERNEL_MAIN_SRC)
-	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $^
 
 $(ASMLIB): $(ASMLIB_SRC)
 	$(AS) $(ASFLAGS) -o $@ $^
