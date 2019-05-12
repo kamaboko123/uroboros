@@ -36,6 +36,7 @@ FONT = $(FONT_DIR)/bin/hankaku.o
 IMG = $(TARGET_DIR)/uroboros.img
 
 QEMU = qemu-system-x86_64
+BOCHS_CONF = bochs.conf
 
 all : clean $(IMG)
 
@@ -66,10 +67,11 @@ $(IMG): $(IPL) $(OSL) $(KERNEL)
 	mformat -f 1440 -B $(IPL) -C -i $@ ::
 	mcopy $(KERNEL) -i $@ ::
 
-run: all
-	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy
+run: all $(BOCHS_CONF)
+	bochs -f $(BOCHS_CONF)
+	#$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy
 debug: $(IMG)
-	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -gdb tcp::10000 -S
+	#$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -gdb tcp::10000 -S
 
 clean:
 	rm -rf $(TARGET_DIR)

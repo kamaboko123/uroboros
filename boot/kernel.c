@@ -93,8 +93,6 @@ void Main(void){
     //CR0のPGフラグを立てる
     enable_paging(PDT_ADDR);
     
-    //for(;;) io_hlt();
-    
     //ページングが有効になったのでここから仮想アドレスを使用していく
     init_palette();
     init_screen(0);
