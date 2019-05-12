@@ -40,6 +40,8 @@ FONT = font/bin/hankaku.o
 
 QEMU = qemu-system-x86_64
 
+BOCHS_CONF = bochs.conf
+
 all : clean $(IMG)
 
 $(IPL): $(IPL_SRC) $(IPL_LDS)
@@ -60,7 +62,7 @@ $(TARGET_DIR)/%.o : $(KERNEL_SRC_DIR)/%.c
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $^
 
 $(KERNEL) : $(KERNEL_OBJ) $(ASMLIB) $(FONT)
-	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $@ $(KERNEL_OBJ) $(ASMLIB) $(FONT)
+	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $@ $(KERNEL_OBJ) $(ASMLIB) $(FONT) 
 
 $(KERNEL_IMG) : $(KERNEL) $(OSL)
 	cat $(OSL) $(KERNEL) > $@
@@ -75,5 +77,9 @@ $(IMG) : $(IPL) $(KERNEL_IMG)
 run: $(IMG)
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy
 
+run_bochs:
+	bochs -f $(BOCHS_CONF)
+
 clean:
 	rm -rf $(TARGET_DIR)
+
