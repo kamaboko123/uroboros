@@ -29,11 +29,24 @@
 #define PD_PDE_INDEX    0xFFC00000
 #define PT_PTE_INDEX    0x003FF000
 
+#define PHY_MEM_MAN_ADDR    0x00200000
+#define PHY_MEM_MAN_ADDR_PG 0x00000000
+
+#define PHY_ADDR_START 0x00300000
+#define MAX_PHY_MEM_PAGE 4096
+
+typedef struct PHY_MEMMAN{
+    char tbl[MAX_PHY_MEM_PAGE];
+} PHY_MEMMAN;
+
 typedef unsigned int PTE;
 typedef unsigned int PDE;
+int get_paging_status(void);
 void set_pte(PTE *pte, unsigned int addr, unsigned int flags);
 void set_pte_flag(PTE *pte, unsigned int flags);
 void set_pde(PDE *pde, unsigned int addr, unsigned int flags);
 void set_pde_flag(PDE *pde, unsigned int flags);
+
+void init_phy_memman();
 
 #endif

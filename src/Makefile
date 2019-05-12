@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -nostdlib -fno-builtin -fno-stack-protector -m32 -O0 -Wall -std=c11
+CFLAGS = -nostdlib -fno-builtin -fno-stack-protector -fno-common -m32 -O0 -Wall -std=c11
 AS = nasm
 ASFLAGS = -f elf
 LD = ld

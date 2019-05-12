@@ -13,7 +13,11 @@
 //ページング有効化後のカーネル配置（ページング有効化前にここにコピーする）
 #define PG_KERNEL_ADDR  0x00300000
 
+extern PHY_MEMMAN phy_memman;
+
 void Main(void){
+    init_phy_memman(0, 0);
+    
     //コピー元
     unsigned char *kernel = (unsigned char *)KERNEL_ADDR;
     //コピー先
@@ -65,7 +69,7 @@ void Main(void){
     //put_font_asc(0, 0, 7, 'H');
     print_asc(0, 0, 7, "Welcome to UroborOS!");
     
-    if((load_cr0() & 0x80000000) != 0){
+    if(get_paging_status()){
         print_asc(0, 16, 7, "paging is enable!");
     }
     else{
