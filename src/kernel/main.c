@@ -11,17 +11,15 @@
 #define PT0_ADDR        0x00032000
 
 //ページング有効化後のカーネル配置（ページング有効化前にここにコピーする）
-#define PG_KERNEL_ADDR  0x00300000
+//#define PG_KERNEL_ADDR  0x00300000
 
 extern PHY_MEMMAN phy_memman;
 
 void Main(void){
-    init_phy_memman(0, 0);
+    init_phy_memman(0x00300000);
     
     //コピー元
     unsigned char *kernel = (unsigned char *)KERNEL_ADDR;
-    //コピー先
-    unsigned char *pg_kernel = (unsigned char *)PG_KERNEL_ADDR;
     
     //KERNEL_ADDRが初期のカーネルの配置場所
     //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
@@ -29,7 +27,6 @@ void Main(void){
     
     //unsigned int kernel_pde_index = (KERNEL_ADDR & PD_PDE_INDEX) >> 22;
     unsigned int kernel_pte_index = (KERNEL_ADDR & PT_PTE_INDEX) >> 12;
-    unsigned int vram_pte_index = (VRAM_ADDR & PT_PTE_INDEX) >> 12;
     
     PTE *page_table = (PTE *)PT0_ADDR;
     
@@ -41,20 +38,17 @@ void Main(void){
     //ページテーブルの設定
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
     for(int i = 0; i < 32; i++){
-        set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + i, PG_KERNEL_ADDR + (0x1000 * i), PTE_P | PTE_RW);
+        unsigned int alloc_addr = alloc_phy_mem_4k();
+        set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + i, alloc_addr, PTE_P | PTE_RW);
+        for(int j = 0; j < 4096; j++){
+            ((unsigned char *)alloc_addr)[j] = kernel[4096 * i + j];
+        }
     }
+    
+    unsigned int vram_pte_index = (VRAM_ADDR & PT_PTE_INDEX) >> 12;
     for(int i = 0; i < 160; i++){
         set_pte(((PTE *)PT0_ADDR) + vram_pte_index + i, VRAM_ADDR + (0x1000 * i), PTE_P | PTE_RW);
     }
-    
-    //set_pte(((PTE *)PT0_ADDR) + kernel_pte_index, PG_KERNEL_ADDR, PTE_P | PTE_RW);
-    //set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + 1, PG_KERNEL_ADDR + 0x1000, PTE_P | PTE_RW);
-    //set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + 2, PG_KERNEL_ADDR + 0x2000, PTE_P | PTE_RW);
-    //カーネルの再配置
-    for(int i = 0; i < (1024 * 4 * 1024); i++){
-        pg_kernel[i] = kernel[i];
-    }
-    
     
     //ページングの有効化
     //CR3にページングテーブルのアドレスをストア
