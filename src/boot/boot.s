@@ -102,7 +102,12 @@ entry_protect_mode:
     call memcpy
     
     mov esp, 0x00030fff
+
     jmp dword 2*8:0x00100000
+_hlt:
+    hlt
+    jmp _hlt
+
 
 memcpy: ;esiのアドレスからediのアドレスにコピー 4byteずつecx回コピー
     mov eax, [esi]

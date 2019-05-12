@@ -29,4 +29,11 @@
 #define PD_PDE_INDEX    0xFFC00000
 #define PT_PTE_INDEX    0x003FF000
 
+typedef unsigned int PTE;
+typedef unsigned int PDE;
+void set_pte(PTE *pte, unsigned int addr, unsigned int flags);
+void set_pte_flag(PTE *pte, unsigned int flags);
+void set_pde(PDE *pde, unsigned int addr, unsigned int flags);
+void set_pde_flag(PDE *pde, unsigned int flags);
+
 #endif

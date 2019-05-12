@@ -1,3 +1,5 @@
+#include "mem.h"
+
 typedef unsigned int PTE;
 typedef unsigned int PDE;
 
