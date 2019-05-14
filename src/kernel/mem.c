@@ -14,9 +14,9 @@ void set_pte_flag(PTE *pte, unsigned int flags){
     *pte |= flags;
 }
 
-void set_pde(PDE *pde, unsigned int addr, unsigned int flags){
+void set_pde(PDE *pde, PTE *pt, unsigned int flags){
     *pde = 0;
-    *pde |= (addr & PDE_PT_ADDR);
+    *pde |= ((unsigned int)pt & PDE_PT_ADDR);
     *pde |= flags;
 }
 void set_pde_flag(PDE *pde, unsigned int flags){
@@ -56,4 +56,13 @@ unsigned int alloc_phy_mem_4k(void){
         }
     }
     return 0;
+}
+
+void map_memory_4k(PDE *pdt, unsigned int virtual_addr, unsigned int physical_addr){
+    unsigned int pde_index  = (virtual_addr & PD_PDE_INDEX) >> 22;
+    unsigned int pte_index  = (virtual_addr & PT_PTE_INDEX) >> 12;
+    PTE *pt = (PTE *)(((*pdt & PDE_PT_ADDR) >> 22) + (pde_index * (sizeof(PTE) * 1024)));
+    
+    set_pde(pdt + pde_index, pt, PDE_P | PDE_RW);
+    set_pte(pt + pte_index, physical_addr, PTE_P | PTE_RW);
 }

@@ -25,35 +25,31 @@ void Main(void){
     //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
     //また、使用するページディレクトリと、ページテーブルを設定する
     
-    //unsigned int kernel_pde_index = (KERNEL_ADDR & PD_PDE_INDEX) >> 22;
-    unsigned int kernel_pte_index = (KERNEL_ADDR & PT_PTE_INDEX) >> 12;
-    
-    PTE *page_table = (PTE *)PT0_ADDR;
-    
     //ページディレクトリの設定(とりあえず1ページ)
     //ページテーブルのアドレスを設定する
     //(Pフラグを立てて置かないと、物理メモリに存在しないと解釈されてページフォールトが発生するので立てておく)
-    set_pde((PDE *)PDT_ADDR, PT0_ADDR, PDE_P | PDE_RW);
+    set_pde((PDE *)PDT_ADDR, (PTE *)PT0_ADDR, PDE_P | PDE_RW);
     
     //ページテーブルの設定
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
     for(int i = 0; i < 32; i++){
         unsigned int alloc_addr = alloc_phy_mem_4k();
-        set_pte(((PTE *)PT0_ADDR) + kernel_pte_index + i, alloc_addr, PTE_P | PTE_RW);
+        map_memory_4k((PDE *)PDT_ADDR, KERNEL_ADDR + 4096 * i, alloc_addr);
+        
         for(int j = 0; j < 4096; j++){
             ((unsigned char *)alloc_addr)[j] = kernel[4096 * i + j];
         }
     }
     
-    unsigned int vram_pte_index = (VRAM_ADDR & PT_PTE_INDEX) >> 12;
+    //vram
     for(int i = 0; i < 160; i++){
-        set_pte(((PTE *)PT0_ADDR) + vram_pte_index + i, VRAM_ADDR + (0x1000 * i), PTE_P | PTE_RW);
+        map_memory_4k((PDE *)PDT_ADDR, VRAM_ADDR_VIRTUAL + 4096 * i, VRAM_ADDR + 4096 * i);
     }
     
+    //stack
     unsigned int new_stack_v = 0x00500000;
     unsigned int new_stack_p = alloc_phy_mem_4k();
-    set_pde(((PDE *)PDT_ADDR) + ((new_stack_v & PD_PDE_INDEX) >> 22), PT0_ADDR + (4 * 1024), PDE_P | PDE_RW);
-    set_pte(((PTE *)PT0_ADDR) + 1024 + ((new_stack_v & PT_PTE_INDEX) >> 12), new_stack_p, PTE_P | PTE_RW);
+    map_memory_4k((PDE *)PDT_ADDR, new_stack_v, new_stack_p);
     
     //ページングの有効化
     //CR3にページングテーブルのアドレスをストア

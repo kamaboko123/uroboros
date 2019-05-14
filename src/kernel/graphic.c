@@ -1,5 +1,5 @@
 #include "graphic.h"
-unsigned char *vram = (unsigned char *)VRAM_ADDR;
+unsigned char *vram = (unsigned char *)VRAM_ADDR_VIRTUAL;
 
 void init_palette(void){
     static unsigned char table_rgb[16 * 3] = {
@@ -45,10 +45,9 @@ void set_palette(int start, int end, unsigned char *rgb){
 }
 
 void init_screen(unsigned int color){
-    unsigned char *vram = (unsigned char *)VRAM_ADDR;
     for(int y = 0; y < SCREEN_YSIZE; y++){
         for(int x = 0; x < SCREEN_XSIZE; x++){
-            vram[y * SCREEN_XSIZE + x] = 0; //black
+            vram[y * SCREEN_XSIZE + x] = color; //black
         }
     }
 }

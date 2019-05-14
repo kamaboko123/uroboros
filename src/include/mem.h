@@ -45,11 +45,12 @@ typedef unsigned int PDE;
 int get_paging_status(void);
 void set_pte(PTE *pte, unsigned int addr, unsigned int flags);
 void set_pte_flag(PTE *pte, unsigned int flags);
-void set_pde(PDE *pde, unsigned int addr, unsigned int flags);
+void set_pde(PDE *pde, PTE *pt, unsigned int flags);
 void set_pde_flag(PDE *pde, unsigned int flags);
 
 PHY_MEMMAN *get_phy_memman();
 void init_phy_memman(unsigned int base_addr);
 unsigned int alloc_phy_mem_4k(void);
+void map_memory_4k(PDE *pdt, unsigned int virtual_addr, unsigned int physical_addr);
 
 #endif

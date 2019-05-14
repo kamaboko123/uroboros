@@ -4,6 +4,7 @@
 #include "asmlib.h"
 
 #define VRAM_ADDR 0x000A0000
+#define VRAM_ADDR_VIRTUAL 0x00000000
 #define SCREEN_XSIZE 320
 #define SCREEN_YSIZE 200
 
