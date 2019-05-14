@@ -50,10 +50,17 @@ void Main(void){
         set_pte(((PTE *)PT0_ADDR) + vram_pte_index + i, VRAM_ADDR + (0x1000 * i), PTE_P | PTE_RW);
     }
     
+    unsigned int new_stack_v = 0x00500000;
+    unsigned int new_stack_p = alloc_phy_mem_4k();
+    set_pde(((PDE *)PDT_ADDR) + ((new_stack_v & PD_PDE_INDEX) >> 22), PT0_ADDR + (4 * 1024), PDE_P | PDE_RW);
+    set_pte(((PTE *)PT0_ADDR) + 1024 + ((new_stack_v & PT_PTE_INDEX) >> 12), new_stack_p, PTE_P | PTE_RW);
+    
     //ページングの有効化
     //CR3にページングテーブルのアドレスをストア
     //CR0のPGフラグを立てる
-    enable_paging(PDT_ADDR);
+    enable_paging(PDT_ADDR, new_stack_p + 4094, new_stack_v + 4094);
+    
+    //for(;;) io_hlt();
     
     //ページングが有効になったのでここから仮想アドレスを使用していく
     init_palette();

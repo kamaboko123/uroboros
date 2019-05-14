@@ -36,18 +36,53 @@ io_store_eflags:
     popf
     ret
 
-;void enable_paging(unsigned int pdt_ddr)
+
+ORG_STACK_BASE EQU 0x00031000
+
+;void enable_paging(unsigned int pdt_ddr, unsigned int new_stack_base_phy, unsigned int new_stack_base_virt)
 global enable_paging
 enable_paging:
     cli
-    mov ecx, [esp]
+    
+    ;CR3レジスタにPDTのアドレスをセット
     mov eax, [esp + 4]
     mov cr3, eax
-    mov eax, cr0
-    or eax, 0x80000000
-    mov cr0, eax
-    mov esp, 0x00101f00
-    jmp ecx
+    
+    ;espの計算（仮想アドレス）、edxに保管してあとで切り替える
+    ;新しいスタックの仮想アドレス + (現在のesp - 今のスタックの底)
+    mov edx, esp
+    sub edx, ORG_STACK_BASE
+    add edx, [esp + 12]
+    
+    ;ebpの計算（仮想アドレス）
+    ;新しいスタックの仮想アドレス + (現在のebp - 今のスタックの底)
+    sub ebp, ORG_STACK_BASE
+    add ebp, [esp + 12]
+    
+    ;espの計算（物理アドレス）、eaxに保管してコピーに使う
+    ;新しいスタックの物理アドレス + (現在のesp - 今のスタックの底)
+    mov eax, esp
+    sub eax, ORG_STACK_BASE
+    add eax, [esp + 8]
+    
+;スタックの再配置(中身をページング有効化後に仮想アドレスでアクセスされる場所にコピー)
+copy_stack:
+    mov ecx, [esp]
+    add esp, 4
+    mov [eax], ecx
+    add eax, 4
+    cmp esp, ORG_STACK_BASE
+    jne copy_stack
+    
+    ;espを仮想アドレスに切り替え
+    mov esp, edx
+    
+    ;ページング有効化
+    mov ecx, cr0
+    or ecx, 0x80000000
+    mov cr0, ecx
+    ret
+    
 
 ;int load_cr0(void)
 global load_cr0

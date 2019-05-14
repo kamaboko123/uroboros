@@ -6,7 +6,7 @@ void io_cli(void);
 int io_load_eflags(void);
 int io_store_eflags(int flags);
 void io_out8(int port, int data);
-void enable_paging(unsigned int pdt_ddr);
+void enable_paging(unsigned int pdt_ddr, unsigned int new_stack_base_phy, unsigned int new_stack_base_virt);
 int load_cr0(void);
 
 #endif

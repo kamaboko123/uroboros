@@ -101,7 +101,7 @@ entry_protect_mode:
     mov ecx, KERNEL_SIZE/4
     call memcpy
     
-    mov esp, 0x00030fff
+    mov esp, 0x00031000
 
     jmp dword 2*8:0x00100000
 _hlt:
