@@ -1,5 +1,6 @@
 BITS 16
 
+; 512 * 18 * 10 / 1024 = 90KB
 READ_TRACKS EQU 10
 
 ;jmp to IPL(generary : EB 3E)

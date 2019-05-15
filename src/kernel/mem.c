@@ -33,10 +33,10 @@ int get_paging_status(void){
 
 PHY_MEMMAN *get_phy_memman(void){
     if(get_paging_status()){
-        return (PHY_MEMMAN *) PHY_MEM_MAN_ADDR_PG;
+        return (PHY_MEMMAN *) PHY_MEM_MAN_ADDR_V;
     }
     
-    return (PHY_MEMMAN *) PHY_MEM_MAN_ADDR;
+    return (PHY_MEMMAN *) PHY_MEM_MAN_ADDR_P;
 }
 
 void init_phy_memman(unsigned int base_addr){
@@ -47,7 +47,7 @@ void init_phy_memman(unsigned int base_addr){
     }
 }
 
-unsigned int alloc_phy_mem_4k(void){
+unsigned int pmalloc_4k(void){
     PHY_MEMMAN *memman = get_phy_memman();
     for(int i = 0; i < MAX_PHY_MEM_PAGE; i++){
         if(memman->tbl[i] == 0){

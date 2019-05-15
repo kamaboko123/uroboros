@@ -72,7 +72,7 @@ copy_stack:
     mov [eax], ecx
     add eax, 4
     cmp esp, ORG_STACK_BASE
-    jne copy_stack
+    jle copy_stack
     
     ;espを仮想アドレスに切り替え
     mov esp, edx

@@ -1,6 +1,8 @@
 #ifndef MEM_H
 #define MEM_H
 
+#include "kernel.h"
+
 #define PTE_P           0x00000001
 #define PTE_RW          0x00000002
 #define PTE_US          0x00000004
@@ -29,12 +31,6 @@
 #define PD_PDE_INDEX    0xFFC00000
 #define PT_PTE_INDEX    0x003FF000
 
-#define PHY_MEM_MAN_ADDR    0x00200000
-#define PHY_MEM_MAN_ADDR_PG 0x00000000
-
-#define PHY_ADDR_START 0x00500000
-#define MAX_PHY_MEM_PAGE 1024
-
 typedef struct PHY_MEMMAN{
     char tbl[MAX_PHY_MEM_PAGE];
     unsigned int base_addr;
@@ -50,7 +46,7 @@ void set_pde_flag(PDE *pde, unsigned int flags);
 
 PHY_MEMMAN *get_phy_memman();
 void init_phy_memman(unsigned int base_addr);
-unsigned int alloc_phy_mem_4k(void);
+unsigned int pmalloc_4k(void);
 void map_memory_4k(PDE *pdt, unsigned int virtual_addr, unsigned int physical_addr);
 
 #endif
