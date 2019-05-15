@@ -1,12 +1,13 @@
 #include "mem.h"
 #include "graphic.h"
 
-#define PHY_MEM_MAN_ADDR_V  0x00902000
-#define PHY_MEM_MAN_ADDR_P  0x00901000
-#define PMALLOC_START      0x00a00000
-#define MAX_PHY_MEM_PAGE 4096
+#define PMALLOC_MAN_ADDR_V  0x00902000
+#define PMALLOC_MAN_ADDR_P  0x00901000
+#define PMALLOC_START       0x00a00000
+#define PMALLOC_MAX_PAGE    4096
 
-#define VMALLOC_START      0x03000000
+#define VMALLOC_START       0x03000000
+#define VMALLOC_MAX_PAGE    4096
 
 //カーネルの配置アドレス
 #define KERNEL_ADDR         0x00100000
@@ -27,3 +28,7 @@
 #define SCREEN_XSIZE 320
 #define SCREEN_YSIZE 200
 
+
+
+//CPU
+#define CR0_FLAG_PG 0x80000000

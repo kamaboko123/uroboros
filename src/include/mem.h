@@ -31,8 +31,10 @@
 #define PD_PDE_INDEX    0xFFC00000
 #define PT_PTE_INDEX    0x003FF000
 
+#define MEM_PAGE_SIZE 4096
+
 typedef struct PHY_MEMMAN{
-    char tbl[MAX_PHY_MEM_PAGE];
+    char tbl[PMALLOC_MAX_PAGE];
     unsigned int base_addr;
 } PHY_MEMMAN;
 

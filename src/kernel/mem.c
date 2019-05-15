@@ -24,7 +24,7 @@ void set_pde_flag(PDE *pde, unsigned int flags){
 }
 
 int get_paging_status(void){
-    if((load_cr0() & 0x80000000) != 0){
+    if((load_cr0() & CR0_FLAG_PG) != 0){
         return 1;
     }
     return 0;
@@ -32,26 +32,26 @@ int get_paging_status(void){
 
 PHY_MEMMAN *get_phy_memman(void){
     if(get_paging_status()){
-        return (PHY_MEMMAN *) PHY_MEM_MAN_ADDR_V;
+        return (PHY_MEMMAN *) PMALLOC_MAN_ADDR_V;
     }
     
-    return (PHY_MEMMAN *) PHY_MEM_MAN_ADDR_P;
+    return (PHY_MEMMAN *) PMALLOC_MAN_ADDR_P;
 }
 
 void init_phy_memman(unsigned int base_addr){
     PHY_MEMMAN *memman = get_phy_memman();
     memman->base_addr = base_addr;
-    for(int i = 0; i < MAX_PHY_MEM_PAGE; i++){
+    for(int i = 0; i < PMALLOC_MAX_PAGE; i++){
         memman->tbl[i] = 0;
     }
 }
 
 unsigned int pmalloc_4k(void){
     PHY_MEMMAN *memman = get_phy_memman();
-    for(int i = 0; i < MAX_PHY_MEM_PAGE; i++){
+    for(int i = 0; i < PMALLOC_MAX_PAGE; i++){
         if(memman->tbl[i] == 0){
             memman->tbl[i] = 1;
-            return(memman->base_addr + 4096 * i);
+            return(memman->base_addr + MEM_PAGE_SIZE * i);
         }
     }
     return 0;
