@@ -1,5 +1,5 @@
 #include "graphic.h"
-unsigned char *vram = (unsigned char *)VRAM_ADDR_VIRTUAL;
+unsigned char *vram = (unsigned char *)VRAM_ADDR_V;
 
 void init_palette(void){
     static unsigned char table_rgb[16 * 3] = {

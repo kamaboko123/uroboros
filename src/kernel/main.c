@@ -3,23 +3,15 @@
 extern PHY_MEMMAN phy_memman;
 
 void Main(void){
-    init_phy_memman(0x00300000);
+    init_phy_memman(PMALLOC_START);
     
     //コピー元
     unsigned char *kernel = (unsigned char *)KERNEL_ADDR;
     
-    //KERNEL_ADDRが初期のカーネルの配置場所
-    //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
-    //また、使用するページディレクトリと、ページテーブルを設定する
-    
-    //ページディレクトリの設定(とりあえず1ページ)
-    //ページテーブルのアドレスを設定する
-    //(Pフラグを立てて置かないと、物理メモリに存在しないと解釈されてページフォールトが発生するので立てておく)
-    set_pde((PDE *)KERNEL_PDT, (PTE *)KERNEL_PT0, PDE_P | PDE_RW);
-    
-    //ページテーブルの設定
+    //ページテーブルの設定(4MB)
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
-    for(int i = 0; i < 32; i++){
+    //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
+    for(int i = 0; i < 1024; i++){
         unsigned int alloc_addr = pmalloc_4k();
         map_memory_4k((PDE *)KERNEL_PDT, KERNEL_ADDR + 4096 * i, alloc_addr);
         
@@ -33,15 +25,32 @@ void Main(void){
         map_memory_4k((PDE *)KERNEL_PDT, VRAM_ADDR_V + 4096 * i, VRAM_ADDR + 4096 * i);
     }
     
-    //stack
-    unsigned int new_stack_v = 0x00500000;
+    //stack(とりあえず4K)
     unsigned int new_stack_p = pmalloc_4k();
-    map_memory_4k((PDE *)KERNEL_PDT, new_stack_v, new_stack_p);
+    map_memory_4k((PDE *)KERNEL_PDT, KERNEL_STACK_V, new_stack_p);
+    
+    //pmalloc用
+    /*
+    for(int i = 0; i <= (sizeof(MAX_PHY_MEM_PAGE)/4096); i++){
+        map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V + (i * 4096), PHY_MEM_MAN_ADDR_P + (i * 4096));
+    }
+    */
+    
+    //4KB単位で切り上げて、マッピング
+    int n = ((sizeof(PHY_MEMMAN) + 0x1000) & ~0x1000) / 4096;
+    for(int i = 0; i < n; i++){
+        map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V + (i * 4096), PHY_MEM_MAN_ADDR_P + (i * 4096));
+    }
+    
+    map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V, PHY_MEM_MAN_ADDR_P);
+    map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V + 4096, PHY_MEM_MAN_ADDR_P + 4096);
     
     //ページングの有効化
     //CR3にページングテーブルのアドレスをストア
     //CR0のPGフラグを立てる
-    enable_paging(KERNEL_PDT, new_stack_p + 4094, new_stack_v + 4094);
+    enable_paging(KERNEL_PDT, new_stack_p + 4094, KERNEL_STACK_V + 4094);
+    
+    pmalloc_4k();
     
     //for(;;) io_hlt();
     

@@ -1,5 +1,4 @@
 #include "mem.h"
-#include "asmlib.h"
 
 typedef unsigned int PTE;
 typedef unsigned int PDE;
