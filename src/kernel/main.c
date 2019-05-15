@@ -29,21 +29,11 @@ void Main(void){
     unsigned int new_stack_p = pmalloc_4k();
     map_memory_4k((PDE *)KERNEL_PDT, KERNEL_STACK_V, new_stack_p);
     
-    //pmalloc用
-    /*
-    for(int i = 0; i <= (sizeof(MAX_PHY_MEM_PAGE)/4096); i++){
-        map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V + (i * 4096), PHY_MEM_MAN_ADDR_P + (i * 4096));
-    }
-    */
-    
     //4KB単位で切り上げて、マッピング
     int n = ((sizeof(PHY_MEMMAN) + 0x1000) & ~0x1000) / 4096;
     for(int i = 0; i < n; i++){
         map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V + (i * 4096), PHY_MEM_MAN_ADDR_P + (i * 4096));
     }
-    
-    map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V, PHY_MEM_MAN_ADDR_P);
-    map_memory_4k((PDE *)KERNEL_PDT, PHY_MEM_MAN_ADDR_V + 4096, PHY_MEM_MAN_ADDR_P + 4096);
     
     //ページングの有効化
     //CR3にページングテーブルのアドレスをストア
