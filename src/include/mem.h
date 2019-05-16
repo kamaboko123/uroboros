@@ -33,10 +33,15 @@
 
 #define MEM_PAGE_SIZE 4096
 
-typedef struct PHY_MEMMAN{
+typedef struct P_MEMMAN{
     char tbl[PMALLOC_MAX_PAGE];
     unsigned int base_addr;
-} PHY_MEMMAN;
+} P_MEMMAN;
+
+typedef struct V_MEMMAN{
+    char tbl[VMALLOC_MAX_PAGE];
+    unsigned int base_addr;
+} V_MEMMAN;
 
 typedef unsigned int PTE;
 typedef unsigned int PDE;
@@ -45,10 +50,12 @@ void set_pte(PTE *pte, unsigned int addr, unsigned int flags);
 void set_pte_flag(PTE *pte, unsigned int flags);
 void set_pde(PDE *pde, PTE *pt, unsigned int flags);
 void set_pde_flag(PDE *pde, unsigned int flags);
-
-PHY_MEMMAN *get_phy_memman();
-void init_pmalloc(unsigned int base_addr);
-unsigned int pmalloc_4k(void);
 void map_memory_4k(PDE *pdt, unsigned int virtual_addr, unsigned int physical_addr);
+
+P_MEMMAN *get_phy_memman();
+void init_pmalloc(unsigned int start_addr);
+unsigned int pmalloc_4k(void);
+
+void init_vmalloc(unsigned int start_addr);
 
 #endif
