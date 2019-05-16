@@ -9,7 +9,7 @@
 
 //最大は4GBなので1024 * 1024
 //実際にはカーネルコードとかの分があるのでもう少し小さくなる
-#define PMALLOC_MAX_PAGE    1024 * 128
+#define PMALLOC_MAX_PAGE    1024 * 512
 
 
 //vmalloc
@@ -17,7 +17,7 @@
 #define VMALLOC_START       0x03000000
 
 //最大は4GBなので1024 * 1024
-#define VMALLOC_MAX_PAGE    1024
+#define VMALLOC_MAX_PAGE    1024 * 512
 
 
 //カーネルの配置アドレス

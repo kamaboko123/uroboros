@@ -57,5 +57,6 @@ void init_pmalloc(unsigned int start_addr);
 unsigned int pmalloc_4k(void);
 
 void init_vmalloc(unsigned int start_addr);
+unsigned int vmalloc_4k(void);
 
 #endif

@@ -47,7 +47,7 @@ void set_palette(int start, int end, unsigned char *rgb){
 void init_screen(unsigned int color){
     for(int y = 0; y < SCREEN_YSIZE; y++){
         for(int x = 0; x < SCREEN_XSIZE; x++){
-            vram[y * SCREEN_XSIZE + x] = color; //black
+            vram[y * SCREEN_XSIZE + x] = color;
         }
     }
 }

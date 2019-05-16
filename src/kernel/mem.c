@@ -72,7 +72,21 @@ void map_memory_4k(PDE *pdt, unsigned int virtual_addr, unsigned int physical_ad
 void init_vmalloc(unsigned int start_addr){
     V_MEMMAN *memman = (V_MEMMAN *) VMALLOC_MAN_ADDR;
     memman->base_addr = start_addr;
-    for(int i = 0; i < 1; i++){
+    for(int i = 0; i < VMALLOC_MAX_PAGE; i++){
         memman->tbl[i] = 0;
     }
+}
+
+unsigned int vmalloc_4k(void){
+    V_MEMMAN *memman = (V_MEMMAN *) VMALLOC_MAN_ADDR;
+    for(int i = 0; i < PMALLOC_MAX_PAGE; i++){
+        if(memman->tbl[i] == 0){
+            memman->tbl[i] = 1;
+            unsigned int v = memman->base_addr + MEM_PAGE_SIZE * i;
+            unsigned int p = pmalloc_4k();
+            map_memory_4k((PDE *)KERNEL_PDT, v, p);
+            return v;
+        }
+    }
+    return 0;
 }
