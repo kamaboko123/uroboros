@@ -38,7 +38,7 @@ PHY_MEMMAN *get_phy_memman(void){
     return (PHY_MEMMAN *) PMALLOC_MAN_ADDR_P;
 }
 
-void init_phy_memman(unsigned int base_addr){
+void init_pmalloc(unsigned int base_addr){
     PHY_MEMMAN *memman = get_phy_memman();
     memman->base_addr = base_addr;
     for(int i = 0; i < PMALLOC_MAX_PAGE; i++){

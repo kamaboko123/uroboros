@@ -1,9 +1,7 @@
 #include "kernel.h"
 
-extern PHY_MEMMAN phy_memman;
-
 void Main(void){
-    init_phy_memman(PMALLOC_START);
+    init_pmalloc(PMALLOC_START);
     
     //コピー元
     unsigned char *kernel = (unsigned char *)KERNEL_ADDR;
