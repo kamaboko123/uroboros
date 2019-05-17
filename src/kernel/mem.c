@@ -57,6 +57,13 @@ uint32_t pmalloc_4k(void){
     return 0;
 }
 
+void pfree(void *addr){
+    P_MEMMAN *memman = get_phy_memman();
+    uint32_t page = rounddown((uint32_t)addr, MEM_PAGE_SIZE);
+    uint32_t index = (page - memman->base_addr) / MEM_PAGE_SIZE;
+    memman->tbl[index] = 0;
+}
+
 void map_memory_4k(PDE *pdt, uint32_t virtual_addr, uint32_t physical_addr){
     uint32_t pde_index  = (virtual_addr & PD_PDE_INDEX) >> 22;
     uint32_t pte_index  = (virtual_addr & PT_PTE_INDEX) >> 12;

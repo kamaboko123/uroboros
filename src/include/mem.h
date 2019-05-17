@@ -56,6 +56,7 @@ void map_memory_4k(PDE *pdt, uint32_t virtual_addr, uint32_t physical_addr);
 P_MEMMAN *get_phy_memman();
 void init_pmalloc(uint32_t start_addr);
 uint32_t pmalloc_4k(void);
+void pfree(void *addr);
 
 uint32_t mem_npage(uint32_t size);
 void init_vmalloc(uint32_t start_addr);

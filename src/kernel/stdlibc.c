@@ -300,6 +300,10 @@ uint32_t rand(){
     return __last_rand;
 }
 
-uint32_t roundup(uint32_t x, uint32_t y){
-    return ((x - 1) / y + 1) * y;
+uint32_t roundup(uint32_t x, uint32_t n){
+    return ((x - 1) / n + 1) * n;
+}
+
+uint32_t rounddown(uint32_t x, uint32_t n){
+    return (x / n) * n;
 }

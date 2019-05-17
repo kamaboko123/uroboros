@@ -83,13 +83,18 @@ void Main(void){
         print_asc(0, i * 16 + 48, 7, s);
     }
     
-    uint32_t *data = (uint32_t*)vmalloc_4k();
-    *data = 0;
-    sprintf(s, "*0x%08x = 0x%08x", data, *data);
+    uint32_t *m = (uint32_t *)pmalloc_4k();
+    sprintf(s, "*0x%08x", m);
     print_asc(0, 96, 7, s);
-    *data = 0x200;
-    sprintf(s, "*0x%08x = 0x%08x", data, *data);
+    
+    uint32_t *m2 = (uint32_t *)pmalloc_4k();
+    uint32_t *m3 = (uint32_t *)pmalloc_4k();
+    pfree((uint32_t *)((uint32_t)m2+0x0fff));
+    
+    m = (uint32_t *)pmalloc_4k();
+    sprintf(s, "*0x%08x", m);
     print_asc(0, 112, 7, s);
+    
     
     for(;;) io_hlt();
 }

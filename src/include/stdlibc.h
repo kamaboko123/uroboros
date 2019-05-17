@@ -28,6 +28,7 @@ int strtol(char *s, char **endp, int base);
 void rand_seed(uint32_t x);
 uint32_t rand();
 
-uint32_t roundup(uint32_t x, uint32_t y);
+uint32_t roundup(uint32_t x, uint32_t n);
+uint32_t rounddown(uint32_t x, uint32_t n);
 
 #endif
