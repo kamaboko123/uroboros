@@ -1,6 +1,7 @@
 #include "mem.h"
 #include "graphic.h"
 #include "stdlibc.h"
+#include "stdint.h"
 
 //pmalloc
 #define PMALLOC_MAN_ADDR_V  0x00901000

@@ -1,14 +1,14 @@
 #include "stdlibc.h"
 
-unsigned int __last_rand = RAND_INIT;
+uint32_t __last_rand = RAND_INIT;
 
-unsigned int sprintf(char *s, char *format, ...){
+uint32_t sprintf(char *s, char *format, ...){
     my_va_list args;
     
     char *s_org = s;
     char disp_digit;
     int pad_flg;
-    unsigned int conv_len;
+    uint32_t conv_len;
     char tmp[16];
     int i;
     
@@ -18,7 +18,7 @@ unsigned int sprintf(char *s, char *format, ...){
     my_va_start(args, format);
     
     while(*format != '\0'){
-        pad_flg = FALSE;
+        pad_flg = false;
         conv_len = 0;
         
         if(*format == '%'){
@@ -33,7 +33,7 @@ unsigned int sprintf(char *s, char *format, ...){
                 goto next;
             }
             else if(isdigit(*format)){
-                pad_flg = TRUE;
+                pad_flg = true;
                 
                 if(*format == '0'){
                     pad_char = '0';
@@ -66,10 +66,10 @@ unsigned int sprintf(char *s, char *format, ...){
                 }
             }
             if(*format == 'x'){
-                conv_len = to_hex_asc(tmp, my_va_arg(args, int), FALSE);
+                conv_len = to_hex_asc(tmp, my_va_arg(args, int), false);
             }
             if(*format == 'X'){
-                conv_len = to_hex_asc(tmp, my_va_arg(args, int), TRUE);
+                conv_len = to_hex_asc(tmp, my_va_arg(args, int), true);
             }
             
             if(pad_flg && (conv_len < disp_digit)){
@@ -97,10 +97,10 @@ next:
     return ((s - s_org) / sizeof(char));
 }
 
-unsigned int to_dec_asc(char *buf, int n){
+uint32_t to_dec_asc(char *buf, int n){
     char *p;
-    unsigned int ret;
-    unsigned int i;
+    uint32_t ret;
+    uint32_t i;
     
     i = ndigit(n, 10);
     ret = i;
@@ -114,10 +114,10 @@ unsigned int to_dec_asc(char *buf, int n){
     return(ret);
 }
 
-unsigned int to_hex_asc(char *buf, int n, int capital){
+uint32_t to_hex_asc(char *buf, int n, bool capital){
     char *p;
-    unsigned int ret;
-    unsigned int i;
+    uint32_t ret;
+    uint32_t i;
     char charset[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     
     i = ndigit(n, 16);
@@ -138,8 +138,8 @@ unsigned int to_hex_asc(char *buf, int n, int capital){
 }
 
 
-unsigned int ndigit(unsigned int n, unsigned int base){
-    unsigned int i = 1;
+uint32_t ndigit(uint32_t n, uint32_t base){
+    uint32_t i = 1;
     
     while(n >= base){
         n /= base;
@@ -148,23 +148,23 @@ unsigned int ndigit(unsigned int n, unsigned int base){
     return(i);
 }
 
-unsigned int upow(unsigned int x, unsigned int n){
+uint32_t upow(uint32_t x, uint32_t n){
     if(n == 0) return(1);
     if(n == 1) return(x);
     return(x * upow(x, n-1));
 }
 
-int isdigit(char c){
+bool isdigit(char c){
     return((c >= '0' && c <= '9'));
 }
 
 int atoi(char *s){
     int result = 0;
-    int sign = FALSE;
+    int sign = false;
     
     //符号付き
     if(*s == '-'){
-        sign = TRUE;
+        sign = true;
         s++;
     }
     
@@ -179,7 +179,7 @@ int atoi(char *s){
     return result;
 }
 
-int iscapital(char c){
+bool iscapital(char c){
     return((c >= 'A' && c <= 'Z'));
 }
 
@@ -209,8 +209,8 @@ int strcmp(char *s1, char *s2){
     return(*s1 - *s2);
 }
 
-int strncmp(char *s1, char *s2, unsigned int n){
-    unsigned int i = 0;
+int strncmp(char *s1, char *s2, uint32_t n){
+    uint32_t i = 0;
     while(*s1 != '\0' && *s2 != '\0' && ++i < n){
         if(*s1 != *s2) break;
         s1++;
@@ -287,19 +287,19 @@ int strtol(char *s, char **endp, int base){
     return ret;
 }
 
-void rand_seed(unsigned int x){
+void rand_seed(uint32_t x){
     __last_rand = x;
 }
 
-unsigned int rand(){
+uint32_t rand(){
     //線形合同法による乱数生成
     //ポケモン3,4世代と同じ値
-    static unsigned int a = 0x41c64e6d;
-    static unsigned int b = 0x6073;
+    static uint32_t a = 0x41c64e6d;
+    static uint32_t b = 0x6073;
     __last_rand = (a * __last_rand + b) % (_UINT_MAX / 2);
     return __last_rand;
 }
 
-unsigned int roundup(unsigned int x, unsigned int y){
+uint32_t roundup(uint32_t x, uint32_t y){
     return ((x - 1) / y + 1) * y;
 }
