@@ -12,7 +12,7 @@ io_cli:
     ret
 
 
-;void io_out8(int port, int data)
+;void io_out8(uint32_t port, uint32_t data)
 global io_out8
 io_out8:
     mov edx, [esp+4]
@@ -28,7 +28,7 @@ io_load_eflags:
     pop eax
     ret
 
-;int io_store_eflags(int flags)
+;void io_store_eflags(uint32_t flags)
 global io_store_eflags
 io_store_eflags:
     mov eax, [esp+4]
@@ -84,7 +84,7 @@ copy_stack:
     ret
     
 
-;int load_cr0(void)
+;uint32_t load_cr0(void)
 global load_cr0
 load_cr0:
     mov eax, cr0
