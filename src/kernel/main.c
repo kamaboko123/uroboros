@@ -19,7 +19,7 @@ void Main(void){
     }
     
     //vram
-    for(int i = 0; i < 16; i++){
+    for(int i = 0; i < mem_npage(VRAM_SIZE); i++){
         map_memory_4k((PDE *)KERNEL_PDT, VRAM_ADDR_V + MEM_PAGE_SIZE * i, VRAM_ADDR + MEM_PAGE_SIZE * i);
     }
     
