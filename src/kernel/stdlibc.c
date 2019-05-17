@@ -2,7 +2,7 @@
 
 unsigned int __last_rand = RAND_INIT;
 
-unsigned int _sprintf(char *s, char *format, ...){
+unsigned int sprintf(char *s, char *format, ...){
     my_va_list args;
     
     char *s_org = s;
@@ -24,7 +24,7 @@ unsigned int _sprintf(char *s, char *format, ...){
         if(*format == '%'){
             format++;
             
-            _memset(tmp, '\0', sizeof(tmp));
+            memset(tmp, '\0', sizeof(tmp));
             
             if(*format == '\0') break;
             else if(*format == '%'){
@@ -32,7 +32,7 @@ unsigned int _sprintf(char *s, char *format, ...){
                 s++;
                 goto next;
             }
-            else if(_isdigit(*format)){
+            else if(isdigit(*format)){
                 pad_flg = TRUE;
                 
                 if(*format == '0'){
@@ -42,8 +42,8 @@ unsigned int _sprintf(char *s, char *format, ...){
                     pad_char = ' ';
                 }
                 
-                disp_digit = _atoi(format);
-                while(_isdigit(*format)) format++;
+                disp_digit = atoi(format);
+                while(isdigit(*format)) format++;
             }
             
             if(*format == 'd' || *format == 'u'){
@@ -52,24 +52,24 @@ unsigned int _sprintf(char *s, char *format, ...){
                     
                     if(pad_char == ' '){
                         *tmp = '-';
-                        conv_len = _to_dec_asc(tmp + 1, ~data_int + 1) + 1;
+                        conv_len = to_dec_asc(tmp + 1, ~data_int + 1) + 1;
                     }
                     else if(pad_char == '0'){
                         *s = '-';
                         s++;
-                        conv_len = _to_dec_asc(tmp, ~data_int + 1);
+                        conv_len = to_dec_asc(tmp, ~data_int + 1);
                         disp_digit--;
                     }
                 }
                 else{
-                    conv_len = _to_dec_asc(tmp, data_int);
+                    conv_len = to_dec_asc(tmp, data_int);
                 }
             }
             if(*format == 'x'){
-                conv_len = _to_hex_asc(tmp, my_va_arg(args, int), FALSE);
+                conv_len = to_hex_asc(tmp, my_va_arg(args, int), FALSE);
             }
             if(*format == 'X'){
-                conv_len = _to_hex_asc(tmp, my_va_arg(args, int), TRUE);
+                conv_len = to_hex_asc(tmp, my_va_arg(args, int), TRUE);
             }
             
             if(pad_flg && (conv_len < disp_digit)){
@@ -79,7 +79,7 @@ unsigned int _sprintf(char *s, char *format, ...){
                 }
             }
             
-            _memcpy(s, tmp, conv_len);
+            memcpy(s, tmp, conv_len);
             s += conv_len;
         }
         else{
@@ -97,37 +97,37 @@ next:
     return ((s - s_org) / sizeof(char));
 }
 
-unsigned int _to_dec_asc(char *buf, int n){
+unsigned int to_dec_asc(char *buf, int n){
     char *p;
     unsigned int ret;
     unsigned int i;
     
-    i = _ndigit(n, 10);
+    i = ndigit(n, 10);
     ret = i;
     p = buf;
     
     while(i > 0){
-        *p = ((n / _upow(10, i - 1)) % 10) + '0';
+        *p = ((n / upow(10, i - 1)) % 10) + '0';
         p++;
         i--;
     }
     return(ret);
 }
 
-unsigned int _to_hex_asc(char *buf, int n, int capital){
+unsigned int to_hex_asc(char *buf, int n, int capital){
     char *p;
     unsigned int ret;
     unsigned int i;
     char charset[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     
-    i = _ndigit(n, 16);
+    i = ndigit(n, 16);
     ret = i;
     p = buf;
     
     while(i > 0){
-        *p = charset[((n / _upow(16, i - 1)) % 16)];
+        *p = charset[((n / upow(16, i - 1)) % 16)];
         
-        if(capital && !_isdigit(*p)){
+        if(capital && isdigit(*p)){
             *p -= 0x20;
         }
         
@@ -138,7 +138,7 @@ unsigned int _to_hex_asc(char *buf, int n, int capital){
 }
 
 
-unsigned int _ndigit(unsigned int n, unsigned int base){
+unsigned int ndigit(unsigned int n, unsigned int base){
     unsigned int i = 1;
     
     while(n >= base){
@@ -148,17 +148,17 @@ unsigned int _ndigit(unsigned int n, unsigned int base){
     return(i);
 }
 
-unsigned int _upow(unsigned int x, unsigned int n){
+unsigned int upow(unsigned int x, unsigned int n){
     if(n == 0) return(1);
     if(n == 1) return(x);
-    return(x * _upow(x, n-1));
+    return(x * upow(x, n-1));
 }
 
-int _isdigit(char c){
+int isdigit(char c){
     return((c >= '0' && c <= '9'));
 }
 
-int _atoi(char *s){
+int atoi(char *s){
     int result = 0;
     int sign = FALSE;
     
@@ -168,7 +168,7 @@ int _atoi(char *s){
         s++;
     }
     
-    while(_isdigit(*s)){
+    while(isdigit(*s)){
         //すでに入ってるものを桁上げ + その桁の数値を加算
         result = (result * 10) + (*s - '0');
         s++;
@@ -179,11 +179,11 @@ int _atoi(char *s){
     return result;
 }
 
-int _iscapital(char c){
+int iscapital(char c){
     return((c >= 'A' && c <= 'Z'));
 }
 
-char *_memcpy(char *buf1, char *buf2, int n){
+char *memcpy(char *buf1, char *buf2, int n){
     int i;
     for(i = 0; i < n; i++){
             buf1[i] = buf2[i];
@@ -191,7 +191,7 @@ char *_memcpy(char *buf1, char *buf2, int n){
     return buf1;
 }
 
-int _memset(char *buf, char byte, int n){
+int memset(char *buf, char byte, int n){
     int i;
     for(i = 0; i < n; i++){
         buf[i] = byte;
@@ -199,7 +199,7 @@ int _memset(char *buf, char byte, int n){
     return(n);
 }
 
-int _strcmp(char *s1, char *s2){
+int strcmp(char *s1, char *s2){
     while(*s1 != '\0' && *s2 != '\0'){
         if(*s1 != *s2) break;
         s1++;
@@ -209,7 +209,7 @@ int _strcmp(char *s1, char *s2){
     return(*s1 - *s2);
 }
 
-int _strncmp(char *s1, char *s2, unsigned int n){
+int strncmp(char *s1, char *s2, unsigned int n){
     unsigned int i = 0;
     while(*s1 != '\0' && *s2 != '\0' && ++i < n){
         if(*s1 != *s2) break;
@@ -220,13 +220,13 @@ int _strncmp(char *s1, char *s2, unsigned int n){
     return(*s1 - *s2);
 }
 
-int _strlen(char *str){
+int strlen(char *str){
     int i;
     for(i = 0; str[i] != '\0'; i++);
     return(i);
 }
 
-int _strtol(char *s, char **endp, int base){
+int strtol(char *s, char **endp, int base){
     int _base;
     int ret = 0;
     int sign = 0;
@@ -240,11 +240,11 @@ int _strtol(char *s, char **endp, int base){
     if(base == 0){
         //渡された文字列の表記方法の検出
         //16進数
-        if(_strncmp(s, "0x", 2) == 0 || _strncmp(s, "0X", 2) == 0){
+        if(strncmp(s, "0x", 2) == 0 || strncmp(s, "0X", 2) == 0){
             _base = 16;
         }
         //8進数
-        if(_strncmp(s, "0", 1) == 0){
+        if(strncmp(s, "0", 1) == 0){
             _base = 8;
         }
         //それ以外は10進数
@@ -258,8 +258,8 @@ int _strtol(char *s, char **endp, int base){
     
     //16進数
     if(_base == 16){
-       while(_isdigit(*s) || (*s >= 'a' && *s <= 'f') || (*s >= 'A' && *s <= 'F') ){
-            if(_isdigit(*s)){
+       while(isdigit(*s) || (*s >= 'a' && *s <= 'f') || (*s >= 'A' && *s <= 'F') ){
+            if(isdigit(*s)){
                 ret = (ret * 16) + (*s - '0');
             }
             else if(*s >= 'a' && *s <= 'f'){
@@ -276,7 +276,7 @@ int _strtol(char *s, char **endp, int base){
     
     //10進数
     if(_base == 10){
-        while(_isdigit(*s)){
+        while(isdigit(*s)){
             ret = (ret * 10) + (*s - '0');
             s++;
         }
@@ -287,11 +287,11 @@ int _strtol(char *s, char **endp, int base){
     return ret;
 }
 
-void _rand_seed(unsigned int x){
+void rand_seed(unsigned int x){
     __last_rand = x;
 }
 
-unsigned int _rand(){
+unsigned int rand(){
     //線形合同法による乱数生成
     //ポケモン3,4世代と同じ値
     static unsigned int a = 0x41c64e6d;
@@ -300,3 +300,6 @@ unsigned int _rand(){
     return __last_rand;
 }
 
+unsigned int roundup(unsigned int x, unsigned int y){
+    return ((x - 1) / y + 1) * y;
+}

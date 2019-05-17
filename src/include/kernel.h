@@ -26,11 +26,20 @@
 //カーネルのスタック(仮想)
 #define KERNEL_STACK_V      0x03000000
 
+//カーネルのスタックサイズ(とりあえず4MB)
+#define KERNEL_STACK_SIZE   1024 * 1024 * 4
+
 //カーネルのページディレクトリテーブルを配置するアドレス(物理)
 #define KERNEL_PDT          0x00500000
 
 //カーネルのページテーブルを配置するアドレス(物理)
 #define KERNEL_PT0          0x00501000
+
+//ページテーブルのサイズ
+#define KERNEL_PT_SIZE      4 * 1024 * 1024
+
+//カーネルのバイナリサイズ
+#define KERNEL_SIZE    4 * 1024 * 1024
 
 //graphic
 #define VRAM_ADDR           0x000A0000

@@ -56,6 +56,7 @@ P_MEMMAN *get_phy_memman();
 void init_pmalloc(unsigned int start_addr);
 unsigned int pmalloc_4k(void);
 
+unsigned int mem_npage(unsigned int size);
 void init_vmalloc(unsigned int start_addr);
 unsigned int vmalloc_4k(void);
 

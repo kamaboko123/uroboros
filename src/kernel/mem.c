@@ -90,3 +90,7 @@ unsigned int vmalloc_4k(void){
     }
     return 0;
 }
+
+unsigned int mem_npage(unsigned int size){
+    return roundup(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
+}
