@@ -78,7 +78,7 @@ void Main(void){
     print_asc(0, 32, 7, s);
     
     for(int i = 0; i < 2; i++){
-        int mem = vmalloc_4k();
+        uint32_t mem =(uint32_t) vmalloc_4k();
         sprintf(s, "[vmalloc_4k] alloc : 0x%08x", mem);
         print_asc(0, i * 16 + 48, 7, s);
     }

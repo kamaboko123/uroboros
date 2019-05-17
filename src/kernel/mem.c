@@ -84,7 +84,7 @@ void init_vmalloc(uint32_t start_addr){
     }
 }
 
-uint32_t vmalloc_4k(void){
+void *vmalloc_4k(void){
     V_MEMMAN *memman = (V_MEMMAN *) VMALLOC_MAN_ADDR;
     for(uint32_t i = 0; i < PMALLOC_MAX_PAGE; i++){
         if(memman->tbl[i] == 0){
@@ -92,7 +92,7 @@ uint32_t vmalloc_4k(void){
             uint32_t v = memman->base_addr + MEM_PAGE_SIZE * i;
             uint32_t p = (uint32_t)pmalloc_4k();
             map_memory_4k((PDE *)KERNEL_PDT, v, p);
-            return v;
+            return (void *)v;
         }
     }
     return 0;

@@ -60,6 +60,6 @@ void pfree(void *addr);
 
 uint32_t mem_npage(uint32_t size);
 void init_vmalloc(uint32_t start_addr);
-uint32_t vmalloc_4k(void);
+void *vmalloc_4k(void);
 
 #endif
