@@ -10,7 +10,7 @@ void Main(void){
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
     //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
     for(int i = 0; i < mem_npage(KERNEL_SIZE); i++){
-        uint32_t mem = pmalloc_4k();
+        uint32_t mem = (uint32_t)pmalloc_4k();
         map_memory_4k((PDE *)KERNEL_PDT, KERNEL_ADDR + MEM_PAGE_SIZE * i, mem);
         
         for(int j = 0; j < MEM_PAGE_SIZE; j++){
@@ -26,7 +26,7 @@ void Main(void){
     //stack
     uint32_t new_stack_p;
     for(int i = 0; i < mem_npage(KERNEL_STACK_SIZE); i++){
-        uint32_t mem = pmalloc_4k();
+        uint32_t mem = (uint32_t)pmalloc_4k();
         if(i == 0) new_stack_p = mem;
         map_memory_4k((PDE *)KERNEL_PDT, KERNEL_STACK_V + i * MEM_PAGE_SIZE, mem);
     }
@@ -55,7 +55,7 @@ void Main(void){
     //vmallocの準備
     //仮想メモリの管理情報を入れる領域の確保と初期化
     for(int i = 0; i < mem_npage(sizeof(V_MEMMAN)); i++){
-        uint32_t mem = pmalloc_4k();
+        uint32_t mem = (uint32_t)pmalloc_4k();
         map_memory_4k((PDE *)KERNEL_PDT, VMALLOC_MAN_ADDR + (i * MEM_PAGE_SIZE), mem);
     }
     init_vmalloc(VMALLOC_START);
