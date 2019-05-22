@@ -76,28 +76,146 @@ void map_memory_4k(PDE *pdt, uint32_t virtual_addr, uint32_t physical_addr){
     set_pte(pt + pte_index, physical_addr, PTE_P | PTE_RW);
 }
 
-void init_vmalloc(uint32_t start_addr){
-    V_MEMMAN *memman = (V_MEMMAN *) VMALLOC_MAN_ADDR;
-    memman->base_addr = start_addr;
-    for(uint32_t i = 0; i < VMALLOC_MAX_PAGE; i++){
-        memman->tbl[i] = 0;
-    }
-}
-
-void *vmalloc_4k(void){
-    V_MEMMAN *memman = (V_MEMMAN *) VMALLOC_MAN_ADDR;
-    for(uint32_t i = 0; i < PMALLOC_MAX_PAGE; i++){
-        if(memman->tbl[i] == 0){
-            memman->tbl[i] = 1;
-            uint32_t v = memman->base_addr + MEM_PAGE_SIZE * i;
-            uint32_t p = (uint32_t)pmalloc_4k();
-            map_memory_4k((PDE *)KERNEL_PDT, v, p);
-            return (void *)v;
-        }
-    }
-    return 0;
-}
-
 uint32_t mem_npage(uint32_t size){
     return roundup(size, MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
+}
+
+
+
+
+void init_vmem_block(V_MEM_BLOCKINFO *block){
+    block->size = 0;
+    block->flags = 0;
+    block->next = NULL;
+    block->prev = NULL;
+}
+
+
+void init_vmalloc(uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end){
+    V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
+    
+    //領域確保
+    for(int i = 0; i < mem_npage(sizeof(V_MEMMAN)); i++){
+        uint32_t mem = (uint32_t)pmalloc_4k();
+        map_memory_4k((PDE *)KERNEL_PDT, VMALLOC_MAN_ADDR + (i * MEM_PAGE_SIZE), mem);
+    }
+    
+    memman->extent_start = extent_start;
+    memman->extent_end = init_extent_end;
+    
+    for(int i = 0; i < mem_npage(memman->extent_end - memman->extent_start); i++){
+        uint32_t mem = (uint32_t)pmalloc_4k();
+        map_memory_4k((PDE *)KERNEL_PDT,  memman->extent_start + (i * MEM_PAGE_SIZE), mem);
+    }
+    
+    for(int i = 0; i < VMEM_MAX_UNITS; i++){
+        init_vmem_block(&memman->blocks[i]);
+    }
+    memman->entry =  &memman->blocks[0];
+    memman->blocks[0].flags |= VMEM_BLOCKS_USE;
+    memman->blocks[0].addr = memman->extent_start;
+    memman->blocks[0].size = memman->extent_end - memman->extent_start;
+}
+
+V_MEM_BLOCKINFO *get_new_block(void){
+    V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
+    
+    for(int i = 0; i < VMEM_MAX_UNITS; i++){
+        if((memman->blocks[i].flags & VMEM_BLOCKS_USE) == 0){
+            memman->blocks[i].flags |=VMEM_BLOCKS_USE;
+            return &memman->blocks[i];
+        }
+    }
+    return NULL;
+}
+
+void *vmalloc(uint32_t size){
+    
+    V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
+    V_MEM_BLOCKINFO *p = memman->entry;
+    
+    while(p->next != NULL){
+        //空き領域発見
+        if(p->size >= size && (p->flags & VMEM_BLOCKS_ALLOC) == 0) break;
+        p = p->next;
+    }
+    
+    //次がある
+    if(p->next != NULL){
+        if(p->size >= size){
+            p->flags |= VMEM_BLOCKS_ALLOC;
+            //次のブロックとの間に空きがあるなら、新しいブロックを作る
+            if(p->size > size){
+                V_MEM_BLOCKINFO *new_block =  get_new_block();
+                new_block->next = p->next;
+                p->next = new_block;
+                new_block->prev = p;
+                new_block->size = p->size - size;
+                p->size = size;
+                new_block->addr = p->addr + p->size;
+            }
+            return (void *)p->addr;
+        }
+    }
+    //次がない
+    else{
+        if(p->size >= size){
+            p->flags |= VMEM_BLOCKS_ALLOC;
+            
+            V_MEM_BLOCKINFO *new_block =  get_new_block();
+            new_block->next = p->next;
+            p->next = new_block;
+            new_block->prev = p;
+            new_block->size = p->size - size;
+            p->size = size;
+            new_block->addr = p->addr + p->size;
+            
+            return (void *)p->addr;
+        }
+    }
+    
+    return NULL;
+}
+
+void vfree(void *addr){
+    V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
+    V_MEM_BLOCKINFO *p = memman->entry;
+    
+    while(p != NULL){
+        if(p->addr == (uint32_t)addr && (p->flags & VMEM_BLOCKS_ALLOC) != 0){
+            break;
+        }
+        p = p->next;
+    }
+    if(p == NULL) return;
+    
+    //pは解放対象
+    
+    p->flags &= ~VMEM_BLOCKS_ALLOC;
+    
+    //次が空きだったらつなげる
+    if(p->next != NULL && (p->next->flags & VMEM_BLOCKS_ALLOC) == 0){
+        V_MEM_BLOCKINFO *next_block = (p->next);
+        p->next = next_block->next;
+        p->size += next_block->size;
+        //次の先があれば繋ぎ変え
+        if(next_block->next != NULL){
+            next_block->next->prev = p;
+        }
+        //つなげたら要らなくなるので初期化しておく
+        init_vmem_block(next_block);
+    }
+    //前が空きだったらつなげる
+    if(p->prev != NULL && (p->prev->flags & VMEM_BLOCKS_ALLOC) == 0){
+        V_MEM_BLOCKINFO *prev_block = (p->prev);
+        prev_block->next = p->next;
+        prev_block->size += p->size;
+        
+        //先があればprevにつなげておく
+        if(p->next != NULL){
+            p->next->prev = prev_block;
+        }
+        
+        init_vmem_block(p);
+    }
 }

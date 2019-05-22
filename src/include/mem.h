@@ -39,11 +39,6 @@ typedef struct P_MEMMAN{
     uint32_t base_addr;
 } P_MEMMAN;
 
-typedef struct V_MEMMAN{
-    uint8_t tbl[VMALLOC_MAX_PAGE];
-    uint32_t base_addr;
-} V_MEMMAN;
-
 typedef uint32_t PTE;
 typedef uint32_t PDE;
 bool get_paging_status(void);
@@ -59,7 +54,31 @@ void *pmalloc_4k(void);
 void pfree(void *addr);
 
 uint32_t mem_npage(uint32_t size);
-void init_vmalloc(uint32_t start_addr);
-void *vmalloc_4k(void);
+
+#define VMEM_MAX_UNITS 256
+#define VMEM_BLOCKS_USE 0x01
+#define VMEM_BLOCKS_ALLOC 0x02
+
+typedef struct V_MEM_BLOCKINFO{
+    uint8_t flags;
+    uint32_t addr;
+    uint32_t size;
+    struct V_MEM_BLOCKINFO *next;
+    struct V_MEM_BLOCKINFO *prev;
+}V_MEM_BLOCKINFO;
+
+typedef struct V_MEMMAN{
+    uint32_t extent_start;
+    uint32_t extent_end;
+    V_MEM_BLOCKINFO blocks[VMEM_MAX_UNITS];
+    V_MEM_BLOCKINFO *entry;
+}V_MEMMAN;
+
+
+
+void init_vmem_block(V_MEM_BLOCKINFO *block);
+void init_vmalloc(uint32_t extent_start, uint32_t init_extend_end, uint32_t max_extent_end);
+void *vmalloc(uint32_t size);
+void vfree(void *addr);
 
 #endif

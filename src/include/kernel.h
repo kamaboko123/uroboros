@@ -16,6 +16,8 @@
 //vmalloc
 #define VMALLOC_MAN_ADDR    0x00b01000
 #define VMALLOC_START       0x03000000
+#define VMALLOC_INIT_END    0x03005000
+#define VMALLOC_MAX_END     0x04000000
 
 //最大は4GBなので1024 * 1024
 #define VMALLOC_MAX_PAGE    1024 * 512
@@ -25,10 +27,12 @@
 #define KERNEL_ADDR         0x00100000
 
 //カーネルのスタック(仮想)
-#define KERNEL_STACK_V      0x03000000
+//#define KERNEL_STACK_V      0x03000000
+#define KERNEL_STACK_V      0x01001000
+#define KERNEL_STACK_TOP_V  0x01000000
 
 //カーネルのスタックサイズ(とりあえず4MB)
-#define KERNEL_STACK_SIZE   1024 * 1024 * 4
+#define KERNEL_STACK_SIZE   KERNEL_STACK_V - KERNEL_STACK_TOP_V
 
 //カーネルのページディレクトリテーブルを配置するアドレス(物理)
 #define KERNEL_PDT          0x00500000

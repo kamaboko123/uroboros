@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <CUnit/CUnit.h>
+#include <CUnit/Basic.h>
+
 #define VMEM_MAX_UNITS 256
 #define VMEM_BLOCKS_USE 0x01
 #define VMEM_BLOCKS_ALLOC 0x02
@@ -194,33 +197,52 @@ void vfree(void *addr){
     }
 }
 
+void test_vmalloc(void);
+
 int main(void){
-    init_vmalloc(0x10000, 0x14000);
-    uint32_t *a[100] = {0};
+    CU_pSuite testSuite;
     
-    _dump_vmem();
-    a[0] = vmalloc(0x800);
-    printf("%p\n", a[0]);
-    a[1] = vmalloc(0x1000);
-    printf("%p\n", a[1]);
-    a[2] = vmalloc(0x1000);
-    printf("%p\n", a[2]);
-    a[3] = vmalloc(0x1000);
-    printf("%p\n", a[3]);
-    a[4] = vmalloc(0x1000);
-    printf("%p\n", a[4]);
-    a[5] = vmalloc(0x1000);
-    printf("%p\n", a[5]);
-    a[6] = vmalloc(0x1000);
-    printf("%p\n", a[6]);
-    a[7] = vmalloc(0x800);
-    printf("%p\n", a[7]);
+    CU_initialize_registry();
+    testSuite = CU_add_suite("VmallocTest", NULL, NULL);
     
-    //vfree(a[1]);
-    _dump_vmem();
-    vfree(a[0]);
-    _dump_vmem();
-    vfree(a[0]);
+    CU_add_test(testSuite, "test of vmalloc", test_vmalloc);
     
-    _dump_vmem();
+    CU_basic_run_tests();
+    CU_cleanup_registry();
+    
+    return 0;
+}
+
+
+#define START_ADDR 0x10000
+#define END_ADDR 0x15000
+/*
+void test_block_list(void){
+    V_MEM_BLOCKINFO *p = memman->entry;
+    while(p != NULL){
+        if(p->prev != NULL){
+            CU_ASSERT(p->prev->addr + p->prev->size == p->addr);
+        }
+        p = p->next;
+    }
+}
+*/
+void test_vmalloc(void){
+    init_vmalloc(START_ADDR, END_ADDR);
+    
+    uint32_t m1 = (uint32_t)vmalloc(0x1000);
+    CU_ASSERT(m1 == START_ADDR + 0x0000);
+    uint32_t m2 = (uint32_t)vmalloc(0x1000);
+    CU_ASSERT(m2 == START_ADDR + 0x1000);
+    uint32_t m3 = (uint32_t)vmalloc(0x1000);
+    CU_ASSERT(m3 == START_ADDR + 0x2000);
+    uint32_t m4 = (uint32_t)vmalloc(0x1000);
+    CU_ASSERT(m4 == START_ADDR + 0x3000);
+    uint32_t m5 = (uint32_t)vmalloc(0x1000);
+    CU_ASSERT(m5 == START_ADDR + 0x4000);
+    
+    uint32_t m6 = (uint32_t)vmalloc(0x1000);
+    CU_ASSERT(m6 == NULL);
+    
+    
 }
