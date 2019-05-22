@@ -19,6 +19,8 @@
 #define VMALLOC_INIT_END    0x03001000
 #define VMALLOC_MAX_END     0x04000000
 
+#define VMALLOC_ALIGNMENT   0x00000010
+
 //カーネルの配置アドレス
 #define KERNEL_ADDR         0x00100000
 

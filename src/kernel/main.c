@@ -76,7 +76,7 @@ void Main(void){
     print_asc(0, 32, 7, s);
     
     for(int i = 1; i < 5; i++){
-        uint32_t mem =(uint32_t) vmalloc(i * 0x1000);
+        uint32_t mem =(uint32_t) vmalloc(i * 0x1000+3);
         *(uint32_t *)mem = 1000;
         sprintf(s, "[vmalloc] 0x%08x - 0x%08x", mem, i*0x1000 - 1);
         print_asc(0, i * 16 + 48, 7, s);

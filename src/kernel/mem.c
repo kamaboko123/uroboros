@@ -100,8 +100,10 @@ void init_vmalloc(uint32_t extent_start, uint32_t init_extent_end, uint32_t max_
         map_memory_4k((PDE *)KERNEL_PDT, VMALLOC_MAN_ADDR + (i * MEM_PAGE_SIZE), mem);
     }
     
-    memman->extent_start = extent_start;
-    memman->extent_end = init_extent_end;
+    //アラインメントを揃える
+    memman->extent_start = roundup(extent_start, VMALLOC_ALIGNMENT);
+    memman->extent_end = roundup(init_extent_end, VMALLOC_ALIGNMENT);
+    memman->extent_max = roundup(max_extent_end, VMALLOC_ALIGNMENT);
     
     for(int i = 0; i < mem_npage(memman->extent_end - memman->extent_start); i++){
         uint32_t mem = (uint32_t)pmalloc_4k();
@@ -133,6 +135,9 @@ void *vmalloc(uint32_t size){
     
     V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
     V_MEM_BLOCKINFO *p = memman->entry;
+    
+    //アラインメントを揃える
+    size = roundup(size, VMALLOC_ALIGNMENT);
     
     while(p->next != NULL){
         //空き領域発見
@@ -177,7 +182,7 @@ void *vmalloc(uint32_t size){
     //空き領域がないので、要求サイズの分だけエクステントを拡張する
     for(int i = 0; i < mem_npage(size - p->size); i++){
         //拡張上限なら確保失敗
-        if(memman->extent_end >= VMALLOC_MAX_END) return NULL;
+        if(memman->extent_end >= memman->extent_max) return NULL;
         uint32_t mem = (uint32_t)pmalloc_4k();
         //物理メモリがなければ確保失敗
         if(mem == 0) return NULL;
@@ -193,7 +198,7 @@ void vfree(void *addr){
     V_MEM_BLOCKINFO *p = memman->entry;
     
     while(p != NULL){
-        if(p->addr == (uint32_t)addr && (p->flags & VMEM_BLOCKS_ALLOC) != 0){
+        if((p->addr == (uint32_t)addr) && ((p->flags & VMEM_BLOCKS_ALLOC) != 0)){
             break;
         }
         p = p->next;

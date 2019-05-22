@@ -70,6 +70,7 @@ typedef struct V_MEM_BLOCKINFO{
 typedef struct V_MEMMAN{
     uint32_t extent_start;
     uint32_t extent_end;
+    uint32_t extent_max;
     V_MEM_BLOCKINFO blocks[VMEM_MAX_UNITS];
     V_MEM_BLOCKINFO *entry;
 }V_MEMMAN;
