@@ -174,7 +174,18 @@ void *vmalloc(uint32_t size){
         }
     }
     
-    return NULL;
+    //空き領域がないので、要求サイズの分だけエクステントを拡張する
+    for(int i = 0; i < mem_npage(size - p->size); i++){
+        //拡張上限なら確保失敗
+        if(memman->extent_end >= VMALLOC_MAX_END) return NULL;
+        uint32_t mem = (uint32_t)pmalloc_4k();
+        //物理メモリがなければ確保失敗
+        if(mem == 0) return NULL;
+        p->size += MEM_PAGE_SIZE;
+        map_memory_4k((PDE *)KERNEL_PDT, p->addr + (i * MEM_PAGE_SIZE), mem);
+    }
+    
+    return vmalloc(size);
 }
 
 void vfree(void *addr){

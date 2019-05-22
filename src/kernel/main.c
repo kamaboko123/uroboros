@@ -75,25 +75,12 @@ void Main(void){
     sprintf(s, "[palloc_4k] alloc : 0x%08x", pmalloc_4k());
     print_asc(0, 32, 7, s);
     
-    for(int i = 0; i < 2; i++){
-        uint32_t mem =(uint32_t) vmalloc(i * 0x2000);
+    for(int i = 1; i < 5; i++){
+        uint32_t mem =(uint32_t) vmalloc(i * 0x1000);
         *(uint32_t *)mem = 1000;
-        sprintf(s, "[vmalloc] 0x%08x + 0x%08x", mem, i*0x2000);
+        sprintf(s, "[vmalloc] 0x%08x - 0x%08x", mem, i*0x1000 - 1);
         print_asc(0, i * 16 + 48, 7, s);
     }
-    
-    uint32_t *m = (uint32_t *)pmalloc_4k();
-    sprintf(s, "*0x%08x", m);
-    print_asc(0, 96, 7, s);
-    
-    uint32_t *m2 = (uint32_t *)pmalloc_4k();
-    uint32_t *m3 = (uint32_t *)pmalloc_4k();
-    pfree((uint32_t *)((uint32_t)m2+0x0fff));
-    
-    m = (uint32_t *)pmalloc_4k();
-    sprintf(s, "*0x%08x", m);
-    print_asc(0, 112, 7, s);
-    
     
     for(;;) io_hlt();
 }
