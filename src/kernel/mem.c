@@ -235,3 +235,41 @@ void vfree(void *addr){
         init_vmem_block(p);
     }
 }
+
+void init_kernel_mem(void){
+    init_pmalloc(PMALLOC_START);
+    
+    //カーネルイメージのコピー元
+    uint8_t *kernel = (uint8_t *)KERNEL_ADDR;
+    
+    //ページテーブルの設定(4MB)
+    //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
+    //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
+    for(int i = 0; i < mem_npage(KERNEL_SIZE); i++){
+        uint32_t mem = (uint32_t)pmalloc_4k();
+        map_memory_4k((PDE *)KERNEL_PDT, KERNEL_ADDR + MEM_PAGE_SIZE * i, mem);
+        
+        for(int j = 0; j < MEM_PAGE_SIZE; j++){
+            ((uint8_t *)mem)[j] = kernel[MEM_PAGE_SIZE * i + j];
+        }
+    }
+    
+    //vram
+    for(int i = 0; i < mem_npage(VRAM_SIZE); i++){
+        map_memory_4k((PDE *)KERNEL_PDT, VRAM_ADDR_V + MEM_PAGE_SIZE * i, VRAM_ADDR + MEM_PAGE_SIZE * i);
+    }
+    
+    //仮想アドレスでも物理メモリ管理情報にアクセスできるようにする
+    //4KB単位で切り上げてマッピング
+    for(int i = 0; i < mem_npage(sizeof(P_MEMMAN)); i++){
+        map_memory_4k((PDE *)KERNEL_PDT, PMALLOC_MAN_ADDR_V + (i * MEM_PAGE_SIZE), PMALLOC_MAN_ADDR_P + (i * MEM_PAGE_SIZE));
+    }
+    
+    //仮想アドレスでもPDTとPTEにアクセスできるようにマッピング
+    map_memory_4k((PDE *)KERNEL_PDT, KERNEL_PDT, KERNEL_PDT);
+    for(int i = 0; i < mem_npage(KERNEL_PT_SIZE); i++){
+        uint32_t addr = KERNEL_PDT + i * MEM_PAGE_SIZE;
+        map_memory_4k((PDE *)KERNEL_PDT, addr, addr);
+    }
+    
+    }

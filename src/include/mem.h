@@ -82,4 +82,6 @@ void init_vmalloc(uint32_t extent_start, uint32_t init_extend_end, uint32_t max_
 void *vmalloc(uint32_t size);
 void vfree(void *addr);
 
+void init_kernel_mem(void);
+
 #endif
