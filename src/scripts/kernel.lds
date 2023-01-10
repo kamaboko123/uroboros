@@ -7,7 +7,7 @@ SECTIONS {
         *(.text)
     }
     
-    .bas : {
+    .bss : {
         *(.bss)
     }
     
