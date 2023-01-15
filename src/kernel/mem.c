@@ -82,8 +82,6 @@ void map_memory_4k(PDE *pdt, uint32_t virtual_addr, uint32_t physical_addr){
     PTE *pt0 = (PTE *)(KERNEL_PT0 & PDE_PT_ADDR);
     PTE *pt = pt0 + (pde_index * 1024);
     
-    //PTE *pt = (PTE *)(((*pdt & PDE_PT_ADDR) >> 22) + (pde_index * (sizeof(PTE) * 1024)));
-    
     set_pde(pdt + pde_index, pt, PDE_P | PDE_RW);
     set_pte(pt + pte_index, physical_addr, PTE_P | PTE_RW);
 }
@@ -257,8 +255,12 @@ void init_kernel_mem(void){
     //ページテーブルの初期化
     // page directory table
     init_pdt((PDE *)KERNEL_PDT);
-    // page table(とりあえず4MBあれば足りるので1つ)
-    init_pt((PTE *)KERNEL_PT0);
+    // page table
+    for(int i = 0; i < 1024; i++){
+        // 1つのPTはPTE 1024個分
+        PTE *pte = ((PTE*)KERNEL_PT0) + (i * 1024);
+        init_pt(pte);
+    }
 
     //ページテーブルの設定(4MB)
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
