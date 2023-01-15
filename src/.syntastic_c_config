@@ -1,0 +1,5 @@
+-nostdlib
+-fno-builtin
+-m32
+-Wall
+-std=c11
