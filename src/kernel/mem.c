@@ -3,6 +3,18 @@
 typedef uint32_t PTE;
 typedef uint32_t PDE;
 
+void init_pdt(PTE *pde){
+    for(int i = 0; i < 1024; i++){
+        *(pde + i) = 0;
+    }
+}
+
+void init_pt(PTE *pte){
+    for(int i = 0; i < 1024; i++){
+        *(pte + i) = 0;
+    }
+}
+
 void set_pte(PTE *pte, uint32_t addr, uint32_t flags){
     *pte = 0;
     *pte |= (addr & PTE_FRAME_ADDR);
@@ -242,6 +254,12 @@ void init_kernel_mem(void){
     //カーネルイメージのコピー元
     uint8_t *kernel = (uint8_t *)KERNEL_ADDR;
     
+    //ページテーブルの初期化
+    // page directory table
+    init_pdt((PDE *)KERNEL_PDT);
+    // page table(とりあえず4MBあれば足りるので1つ)
+    init_pt((PTE *)KERNEL_PT0);
+
     //ページテーブルの設定(4MB)
     //ページング有効化後のカーネルの再配置場所をフレームのアドレスに設定する
     //ページング有効化後、仮想アドレスとしてKERNEL_ADDRを物理アドレスに変換した先にカーネルを再配置する必要がある
@@ -272,4 +290,4 @@ void init_kernel_mem(void){
         map_memory_4k((PDE *)KERNEL_PDT, addr, addr);
     }
     
-    }
+}
