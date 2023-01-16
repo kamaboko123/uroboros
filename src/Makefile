@@ -2,7 +2,7 @@
 CC = gcc
 CFLAGS = -nostdlib -fno-builtin -fno-stack-protector -fno-common -fno-pic -m32 -O0 -Wall -std=c11
 AS = nasm
-ASFLAGS = -f elf
+ASFLAGS = -f elf -O0
 LD = ld
 
 LDFLAGS = -m elf_i386
@@ -81,6 +81,9 @@ debug: $(IMG)
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -S -gdb tcp::10000
 
 run_bochs:
+	bochs -f $(BOCHS_CONF)
+
+debug_bochs:
 	bochs -f $(BOCHS_CONF)
 
 clean:
