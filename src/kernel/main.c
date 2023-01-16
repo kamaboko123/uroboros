@@ -1,6 +1,6 @@
 #include "kernel.h"
 
-void Main(void){
+void Main(uint64_t *gdt0){
     //ページテーブルの初期化と、ページング移行、vmallocの初期化
     init_kernel_mem();
     //stack
@@ -36,17 +36,21 @@ void Main(void){
     
     
     char s[64];
+    sprintf(s, "gdt: 0x%08x", (uint32_t)gdt0);
+    print_asc(0, 32, 7, s);
+    
     sprintf(s, "[palloc_4k] alloc");
     
     char *p = pmalloc_4k();
     sprintf(s, "[palloc_4k] alloc : 0x%08x", p);
-    print_asc(0, 32, 7, s);
+    print_asc(0, 48, 7, s);
     for(int i = 1; i < 5; i++){
         uint32_t mem =(uint32_t) vmalloc(i * 0x1000+3);
         *(uint32_t *)mem = 1000;
         sprintf(s, "[vmalloc] 0x%08x - 0x%08x", mem, i*0x1000 - 1);
-        print_asc(0, i * 16 + 48, 7, s);
+        print_asc(0, i * 16 + 64, 7, s);
     }
+
     for(;;) io_hlt();
 }
 

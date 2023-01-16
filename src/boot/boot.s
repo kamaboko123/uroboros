@@ -1,5 +1,6 @@
 [BITS 16]
 
+;カーネルサイズを4で割って+1以上
 KERNEL_SIZE EQU 1024 * 512
 
 ;ブート中の仮SS
@@ -103,11 +104,17 @@ entry_protect_mode:
     
     mov esp, 0x00031000
 
+    ;GTD0のアドレスをカーネルに渡す
+    mov eax, GDT0
+    push eax
+    ;戻りアドレス、Mainから戻ることはないので何でもいい(とりあえずエントリポイントにしておく)
+    mov ebx, 0x00007c00
+    push ebp
+
     jmp dword 2*8:0x00100000
 _hlt:
     hlt
     jmp _hlt
-
 
 memcpy: ;esiのアドレスからediのアドレスにコピー 4byteずつecx回コピー
     mov eax, [esi]
@@ -195,6 +202,5 @@ align 16
 GDT:
     DW 8*3-1 ;GDTのサイズ - 1 [byte]
     DD GDT0
-    
 
 kernel:
