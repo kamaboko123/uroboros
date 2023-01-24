@@ -1,4 +1,5 @@
 #include "graphic.h"
+
 uint8_t *vram = (uint8_t *)VRAM_ADDR_V;
 
 void init_palette(void){

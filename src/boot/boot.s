@@ -171,17 +171,16 @@ msg:
 
 align 16
 GDT0:
-    DW 0x0000
-    DW 0x0000
-    DW 0x0000
-    DW 0x0000
-    
+    DW 0x0000, 0x0000, 0x0000, 0x0000
     
     DW 0xffff, 0x0000, 0x9200, 0x00cf
     DW 0xffff, 0x0000, 0x9a00, 0x00cf
-    DW 0x0000
+    DW 0xffff, 0x0000, 0xf200, 0x00cf
+    DW 0xffff, 0x0000, 0xf800, 0x00cf
+    DW 0xffff, 0x0000, 0x00f2, 0xcf00
+    DB 0xff, 0xff, 0x00, 0x00, 0x00, 0xf2, 0xcf, 0x00
     
-    ;GDT1(データセグメント)
+    ;GDT1(kernal データセグメント)
     ;DB 0xFF, 0xFF ; Segment Limit Low
     ;DW 0x0000 ; Segment Base Low
     ;DB 0x00 ; Segment Address Mid
@@ -189,7 +188,7 @@ GDT0:
     ;DB 11001111b ; Segment Limit Hi(0-3)、AVL(4)、0(5)、D/B(6)、G(7)
     ;DB 0x00 ; Base Address Hi
     
-    ;GDT2(コードセグメント)
+    ;GDT2(kernel コードセグメント)
     ;DB 0xFF, 0xFF ; Segment Limit Low
     ;DW 0x0000 ; Segment Base Low
     ;DB 0x00 ; Segment Address Mid
@@ -197,10 +196,12 @@ GDT0:
     ;DB 11001111b ; Segment Limit Hi(0-3)、AVL(4)、0(5)、D/B(6)、G(7)
     ;DB 0x00 ; Base Address Hi
     
+    ;GDT3(user データセグメント)
+    ;GDT4(user コードセグメント)
 
 align 16
 GDT:
-    DW 8*3-1 ;GDTのサイズ - 1 [byte]
+    DW 8*7-1 ;GDTのサイズ - 1 [byte]
     DD GDT0
 
 kernel:

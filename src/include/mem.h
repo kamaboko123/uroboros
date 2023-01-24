@@ -1,8 +1,11 @@
 #ifndef MEM_H
 #define MEM_H
 
-#include "kernel.h"
+#include "stdint.h"
 #include "stdbool.h"
+#include "config.h"
+#include "stdlibc.h"
+#include "asmlib.h"
 
 #define PTE_P           0x00000001
 #define PTE_RW          0x00000002

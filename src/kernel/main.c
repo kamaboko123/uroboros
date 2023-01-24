@@ -21,6 +21,12 @@ void Main(uint64_t *gdt0){
     
     //vmalloc初期化
     init_vmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
+    
+    //割り込み
+    io_cli();
+    init_pic(0xFFFF, PIC_INTR_VEC_BASE);
+    init_pit();
+    io_sti();
 
     //グラフィック初期化
     init_palette();
@@ -33,7 +39,6 @@ void Main(uint64_t *gdt0){
     else{
         print_asc(0, 16, 7, "paging is disable!");
     }
-    
     
     char s[64];
     sprintf(s, "gdt: 0x%08x", (uint32_t)gdt0);
@@ -50,7 +55,7 @@ void Main(uint64_t *gdt0){
         sprintf(s, "[vmalloc] 0x%08x - 0x%08x", mem, i*0x1000 - 1);
         print_asc(0, i * 16 + 64, 7, s);
     }
-
+    
     for(;;) io_hlt();
 }
 

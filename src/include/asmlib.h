@@ -5,6 +5,8 @@
 
 void io_hlt(void);
 void io_cli(void);
+void io_sti(void);
+void io_wait(void);
 uint32_t io_load_eflags(void);
 void io_store_eflags(uint32_t flags);
 void io_out8(uint32_t port, uint32_t data);

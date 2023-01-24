@@ -1,57 +1,14 @@
+#ifndef KERNEL_H
+#define KERNEL_H
+
+#include "config.h"
 #include "mem.h"
 #include "graphic.h"
 #include "stdlibc.h"
 #include "stdint.h"
+#include "intr.h"
+#include "timer.h"
+#include "asmlib.h"
+#include "stdint.h"
 
-//pmalloc
-#define PMALLOC_MAN_ADDR_V  0x00901000
-#define PMALLOC_MAN_ADDR_P  0x00901000
-#define PMALLOC_START       0x01000000
-
-//最大は4GBなので1024 * 1024
-//実際にはカーネルコードとかの分があるのでもう少し小さくなる
-#define PMALLOC_MAX_PAGE    1024 * 512
-
-
-//vmalloc
-#define VMALLOC_MAN_ADDR    0x00b01000
-#define VMALLOC_START       0x03000000
-#define VMALLOC_INIT_END    0x03001000
-#define VMALLOC_MAX_END     0x04000000
-
-#define VMALLOC_ALIGNMENT   0x00000010
-
-//カーネルの配置アドレス
-#define KERNEL_ADDR         0x00100000
-
-//カーネルのスタック(仮想)
-#define KERNEL_STACK_V      0x03000000
-//#define KERNEL_STACK_V      0x01001000
-#define KERNEL_STACK_TOP_V  0x01000000
-
-//カーネルのスタックサイズ(とりあえず4MB)
-#define KERNEL_STACK_SIZE   KERNEL_STACK_V - KERNEL_STACK_TOP_V
-
-//カーネルのページディレクトリテーブルを配置するアドレス(物理)
-#define KERNEL_PDT          0x00500000
-
-//カーネルのページテーブルを配置するアドレス(物理)
-#define KERNEL_PT0          0x00501000
-
-//ページテーブルのサイズ
-#define KERNEL_PT_SIZE      4 * 1024 * 1024
-
-//カーネルのバイナリサイズ
-#define KERNEL_SIZE    4 * 1024 * 1024
-
-//graphic
-#define VRAM_ADDR           0x000A0000
-#define VRAM_ADDR_V         0x00000000
-
-#define SCREEN_XSIZE 320
-#define SCREEN_YSIZE 200
-
-#define VRAM_SIZE SCREEN_XSIZE * SCREEN_YSIZE * 1
-
-//CPU
-#define CR0_FLAG_PG 0x80000000
+#endif

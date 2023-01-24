@@ -11,6 +11,18 @@ io_cli:
     cli
     ret
 
+;void io_sti(void)
+global io_sti
+io_sti:
+    sti
+    ret
+
+;void io_wait(void)
+global io_wait
+io_wait:
+    mov eax, 0x0000000000
+    out 0x80, al
+    ret
 
 ;void io_out8(uint32_t port, uint32_t data)
 global io_out8
