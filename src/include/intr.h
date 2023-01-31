@@ -21,6 +21,16 @@
 // Slave側 00000010 (Master側の番号をそのまま2進表記)
 #define PIC_ICW3_SLAVE  0x02
 
+typedef struct IDT{
+    uint16_t base_lo;
+    uint16_t sel;
+    uint8_t reserved;
+    uint8_t flags;
+    uint16_t base_hi;
+} __attribute__((__packed__)) IDT;
+
 void init_pic(uint16_t imr, uint32_t intr_vec_base);
+void init_idt();
+void set_idt(uint8_t vec_num, void (*func)(void));
 
 #endif

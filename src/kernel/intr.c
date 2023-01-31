@@ -35,3 +35,15 @@ void init_pic(uint16_t imr, uint32_t intr_vec_base){
     
     io_wait();
 }
+
+void init_idt(){
+    void *handler = (void *)0;
+
+    IDT idt;
+    idt.base_lo = (uint16_t)((uint32_t)handler & 0xffff);
+    idt.base_hi = (uint16_t)((uint32_t)handler >> 16);
+    idt.sel = 0x10; //kernel code segment
+    idt.reserved = 0;
+    //idt.flags = 0;
+}
+void set_idt(uint8_t vec_num, void (*func)(void)){}

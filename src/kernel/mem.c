@@ -115,6 +115,7 @@ void init_vmalloc(uint32_t extent_start, uint32_t init_extent_end, uint32_t max_
     memman->extent_end = roundup(init_extent_end, VMALLOC_ALIGNMENT);
     memman->extent_max = roundup(max_extent_end, VMALLOC_ALIGNMENT);
     
+    //全部マッピング
     for(int i = 0; i < mem_npage(memman->extent_end - memman->extent_start); i++){
         uint32_t mem = (uint32_t)pmalloc_4k();
         map_memory_4k((PDE *)KERNEL_PDT,  memman->extent_start + (i * MEM_PAGE_SIZE), mem);
@@ -292,4 +293,54 @@ void init_kernel_mem(void){
         map_memory_4k((PDE *)KERNEL_PDT, addr, addr);
     }
     
+}
+
+void init_gdt(GDT *gdt, GDTR *gdtr){
+    gdt[0].limit_low = 0;
+    gdt[0].limit_high = 0;
+    gdt[0].base_low = 0;
+    gdt[0].base_mid = 0;
+    gdt[0].base_high = 0;
+    gdt[0].type = 0;
+    gdt[0].s = 0;
+    gdt[0].dpl = 0;
+    gdt[0].p = 0;
+    gdt[0].avl = 0;
+    gdt[0].db = 0;
+    gdt[0].g = 0;
+
+    //kernel data segment
+    gdt[GDT_SEGNUM_KERNEL_DATA].limit_low = 0xffff;
+    gdt[GDT_SEGNUM_KERNEL_DATA].limit_high = 0xf;
+    gdt[GDT_SEGNUM_KERNEL_DATA].base_low = 0;
+    gdt[GDT_SEGNUM_KERNEL_DATA].base_mid = 0;
+    gdt[GDT_SEGNUM_KERNEL_DATA].base_high = 0;
+    gdt[GDT_SEGNUM_KERNEL_DATA].type = 0x2; //(0010) ビットフィールド内はMSBを左として書けば良い
+    gdt[GDT_SEGNUM_KERNEL_DATA].s = 1;
+    gdt[GDT_SEGNUM_KERNEL_DATA].dpl = 0;
+    gdt[GDT_SEGNUM_KERNEL_DATA].p = 1;
+    gdt[GDT_SEGNUM_KERNEL_DATA].avl = 0;
+    gdt[GDT_SEGNUM_KERNEL_DATA].db = 1;
+    gdt[GDT_SEGNUM_KERNEL_DATA].g = 1;
+
+    //kernel code segment
+    gdt[GDT_SEGNUM_KERNEL_CODE].limit_low = 0xffff;
+    gdt[GDT_SEGNUM_KERNEL_CODE].limit_high = 0xf;
+    gdt[GDT_SEGNUM_KERNEL_CODE].base_low = 0;
+    gdt[GDT_SEGNUM_KERNEL_CODE].base_mid = 0;
+    gdt[GDT_SEGNUM_KERNEL_CODE].base_high = 0;
+    gdt[GDT_SEGNUM_KERNEL_CODE].type = 0xa;
+    gdt[GDT_SEGNUM_KERNEL_CODE].s = 1;
+    gdt[GDT_SEGNUM_KERNEL_CODE].dpl = 0;
+    gdt[GDT_SEGNUM_KERNEL_CODE].p = 1;
+    gdt[GDT_SEGNUM_KERNEL_CODE].avl = 0;
+    gdt[GDT_SEGNUM_KERNEL_CODE].db = 1;
+    gdt[GDT_SEGNUM_KERNEL_CODE].g = 1;
+    
+    //TODO: user land segment
+
+    gdtr->size = GDT_COUNT * sizeof(GDT);
+    gdtr->base = (uint32_t)gdt;
+
+    lgdt((uint32_t)gdtr);
 }

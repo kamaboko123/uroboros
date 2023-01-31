@@ -21,11 +21,20 @@ void Main(uint64_t *gdt0){
     
     //vmalloc初期化
     init_vmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
+
+    //GDTを正式なものにする
+    GDT *gdt = (GDT *)vmalloc(sizeof(GDT) * GDT_COUNT);
+    //とりあえずGDTの最後のエントリの後ろに入れる
+    GDTR *gdtr = (GDTR *)(gdt + GDT_COUNT);
+    init_gdt(gdt, gdtr);
+
+    
+    //TODO: IDTを正式なものにする
     
     //割り込み
     io_cli();
     init_pic(0xFFFF, PIC_INTR_VEC_BASE);
-    init_pit();
+    //init_pit();
     io_sti();
 
     //グラフィック初期化
@@ -33,19 +42,21 @@ void Main(uint64_t *gdt0){
     init_screen(4);
     print_asc(0, 0, 7, "Welcome to UroborOS!");
     
+    /*
     if(get_paging_status()){
         print_asc(0, 16, 7, "paging is enable!");
     }
     else{
         print_asc(0, 16, 7, "paging is disable!");
     }
+    */
+    for(;;) io_hlt();
     
-    char s[64];
-    sprintf(s, "gdt: 0x%08x", (uint32_t)gdt0);
-    print_asc(0, 32, 7, s);
+    //char s[64];
+    //sprintf(s, "g: 0x%08x", *((uint64_t *)(gdt+1)));
+    //print_asc(0, 32, 7, s);
     
-    sprintf(s, "[palloc_4k] alloc");
-    
+    /*
     char *p = pmalloc_4k();
     sprintf(s, "[palloc_4k] alloc : 0x%08x", p);
     print_asc(0, 48, 7, s);
@@ -55,7 +66,7 @@ void Main(uint64_t *gdt0){
         sprintf(s, "[vmalloc] 0x%08x - 0x%08x", mem, i*0x1000 - 1);
         print_asc(0, i * 16 + 64, 7, s);
     }
+    */
     
-    for(;;) io_hlt();
 }
 

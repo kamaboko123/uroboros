@@ -87,4 +87,34 @@ void vfree(void *addr);
 
 void init_kernel_mem(void);
 
+
+//segment descripter
+#define GDT_SEGNUM_KERNEL_DATA 1
+#define GDT_SEGNUM_KERNEL_CODE 2
+
+#define GDT_COUNT 3
+
+typedef struct GDT{
+    uint16_t limit_low;
+    uint16_t base_low;
+    uint8_t base_mid;
+    uint16_t type: 4;
+    uint16_t s: 1;
+    uint16_t dpl: 2;
+    uint16_t p: 1;
+    uint16_t limit_high: 4;
+    uint16_t avl: 1;
+    uint16_t zero: 1;
+    uint16_t db: 1;
+    uint16_t g: 1;
+    uint8_t base_high;
+} __attribute__((__packed__))GDT;
+
+typedef struct GDTR{
+    uint16_t size;
+    uint32_t base;
+} __attribute__((__packed__))GDTR;
+
+void init_gdt(GDT *gdt, GDTR *gdtr);
+
 #endif

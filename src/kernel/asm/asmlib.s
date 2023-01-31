@@ -1,3 +1,22 @@
+;void lgdt(void)
+global lgdt
+lgdt:
+    mov eax, [esp+4]
+    ;jmp loop
+    lgdt [eax]
+    mov ax, 0x08
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    jmp 0x10:.lgdt_reload
+.lgdt_reload:
+    ret
+
+global loop
+loop:
+    jmp loop
 
 ;void io_hlt(void)
 global io_hlt

@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 
+void lgdt(uint32_t gdtr);
 void io_hlt(void);
 void io_cli(void);
 void io_sti(void);
