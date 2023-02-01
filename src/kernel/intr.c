@@ -42,8 +42,8 @@ void init_idt(){
     IDT idt;
     idt.base_lo = (uint16_t)((uint32_t)handler & 0xffff);
     idt.base_hi = (uint16_t)((uint32_t)handler >> 16);
-    idt.sel = 0x10; //kernel code segment
+    idt.sel = GDT_SEGNUM_KERNEL_CODE * 8; //kernel code segment
     idt.reserved = 0;
-    //idt.flags = 0;
+    idt.flags = IDT_FLAG_INT_GATE | IDT_FLAG_D_32 | IDT_FLAG_DPL_0 | IDT_FLAG_P;
 }
 void set_idt(uint8_t vec_num, void (*func)(void)){}

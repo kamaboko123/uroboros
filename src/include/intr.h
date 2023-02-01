@@ -21,6 +21,15 @@
 // Slave側 00000010 (Master側の番号をそのまま2進表記)
 #define PIC_ICW3_SLAVE  0x02
 
+
+#define IDT_FLAG_INT_GATE 0x6
+#define IDT_FLAG_D_32 1 << 3
+#define IDT_FLAG_DPL_0 0 << 4
+#define IDT_FLAG_DPL_1 1 << 4
+#define IDT_FLAG_DPL_2 2 << 4
+#define IDT_FLAG_DPL_3 3 << 4
+#define IDT_FLAG_P 1 << 7
+
 typedef struct IDT{
     uint16_t base_lo;
     uint16_t sel;

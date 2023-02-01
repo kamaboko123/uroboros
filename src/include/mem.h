@@ -7,6 +7,9 @@
 #include "stdlibc.h"
 #include "asmlib.h"
 
+//paging enable flag
+#define CR0_FLAG_PG 0x80000000
+
 #define PTE_P           0x00000001
 #define PTE_RW          0x00000002
 #define PTE_US          0x00000004
@@ -89,11 +92,6 @@ void init_kernel_mem(void);
 
 
 //segment descripter
-#define GDT_SEGNUM_KERNEL_DATA 1
-#define GDT_SEGNUM_KERNEL_CODE 2
-
-#define GDT_COUNT 3
-
 typedef struct GDT{
     uint16_t limit_low;
     uint16_t base_low;
@@ -114,6 +112,13 @@ typedef struct GDTR{
     uint16_t size;
     uint32_t base;
 } __attribute__((__packed__))GDTR;
+
+#define GDT_TYPE_DATA 0 << 3
+#define GDT_TYPE_CODE 1 << 3
+#define GDT_TYPE_CODE_CONFORM 1 << 2
+#define GDT_TYPE_DATA_DOWN 1 << 2
+#define GDT_TYPE_CODE_RE 1 << 1
+#define GDT_TYPE_DATA_RW 1 << 1
 
 void init_gdt(GDT *gdt, GDTR *gdtr);
 

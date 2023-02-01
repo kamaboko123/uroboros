@@ -1,7 +1,8 @@
 #include "kernel.h"
 
 void Main(uint64_t *gdt0){
-    //ページテーブルの初期化と、ページング移行、vmallocの初期化
+    //カーネル関連の最低限のページを初期化
+    //カーネルの再配置
     init_kernel_mem();
     //stack
     uint32_t new_stack_p;
@@ -21,13 +22,9 @@ void Main(uint64_t *gdt0){
     
     //vmalloc初期化
     init_vmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
-
+    
     //GDTを正式なものにする
-    GDT *gdt = (GDT *)vmalloc(sizeof(GDT) * GDT_COUNT);
-    //とりあえずGDTの最後のエントリの後ろに入れる
-    GDTR *gdtr = (GDTR *)(gdt + GDT_COUNT);
-    init_gdt(gdt, gdtr);
-
+    init_gdt((GDT *)GDT_ADDR, (GDTR *)GDTR_ADDR);
     
     //TODO: IDTを正式なものにする
     

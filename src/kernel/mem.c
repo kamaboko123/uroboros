@@ -292,22 +292,25 @@ void init_kernel_mem(void){
         uint32_t addr = KERNEL_PDT + i * MEM_PAGE_SIZE;
         map_memory_4k((PDE *)KERNEL_PDT, addr, addr);
     }
-    
+
+    //正式なGDTとIDTをページテーブルにマッピング(今は4K超えないので1ページでOK)
+    map_memory_4k((PDE *)KERNEL_PDT, GDT_IDT_HEAD_ADDR, GDT_IDT_HEAD_ADDR);
 }
 
 void init_gdt(GDT *gdt, GDTR *gdtr){
-    gdt[0].limit_low = 0;
-    gdt[0].limit_high = 0;
-    gdt[0].base_low = 0;
-    gdt[0].base_mid = 0;
-    gdt[0].base_high = 0;
-    gdt[0].type = 0;
-    gdt[0].s = 0;
-    gdt[0].dpl = 0;
-    gdt[0].p = 0;
-    gdt[0].avl = 0;
-    gdt[0].db = 0;
-    gdt[0].g = 0;
+    //null descripter
+    gdt[GDT_SEGNUM_NULL].limit_low = 0;
+    gdt[GDT_SEGNUM_NULL].limit_high = 0;
+    gdt[GDT_SEGNUM_NULL].base_low = 0;
+    gdt[GDT_SEGNUM_NULL].base_mid = 0;
+    gdt[GDT_SEGNUM_NULL].base_high = 0;
+    gdt[GDT_SEGNUM_NULL].type = 0;
+    gdt[GDT_SEGNUM_NULL].s = 0;
+    gdt[GDT_SEGNUM_NULL].dpl = 0;
+    gdt[GDT_SEGNUM_NULL].p = 0;
+    gdt[GDT_SEGNUM_NULL].avl = 0;
+    gdt[GDT_SEGNUM_NULL].db = 0;
+    gdt[GDT_SEGNUM_NULL].g = 0;
 
     //kernel data segment
     gdt[GDT_SEGNUM_KERNEL_DATA].limit_low = 0xffff;
@@ -315,7 +318,7 @@ void init_gdt(GDT *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_KERNEL_DATA].base_low = 0;
     gdt[GDT_SEGNUM_KERNEL_DATA].base_mid = 0;
     gdt[GDT_SEGNUM_KERNEL_DATA].base_high = 0;
-    gdt[GDT_SEGNUM_KERNEL_DATA].type = 0x2; //(0010) ビットフィールド内はMSBを左として書けば良い
+    gdt[GDT_SEGNUM_KERNEL_DATA].type = GDT_TYPE_DATA | GDT_TYPE_DATA_RW; //(0010) ビットフィールド内はMSBを左として書けば良い
     gdt[GDT_SEGNUM_KERNEL_DATA].s = 1;
     gdt[GDT_SEGNUM_KERNEL_DATA].dpl = 0;
     gdt[GDT_SEGNUM_KERNEL_DATA].p = 1;
@@ -329,7 +332,7 @@ void init_gdt(GDT *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_KERNEL_CODE].base_low = 0;
     gdt[GDT_SEGNUM_KERNEL_CODE].base_mid = 0;
     gdt[GDT_SEGNUM_KERNEL_CODE].base_high = 0;
-    gdt[GDT_SEGNUM_KERNEL_CODE].type = 0xa;
+    gdt[GDT_SEGNUM_KERNEL_CODE].type = GDT_TYPE_CODE | GDT_TYPE_CODE_RE;
     gdt[GDT_SEGNUM_KERNEL_CODE].s = 1;
     gdt[GDT_SEGNUM_KERNEL_CODE].dpl = 0;
     gdt[GDT_SEGNUM_KERNEL_CODE].p = 1;
@@ -337,10 +340,38 @@ void init_gdt(GDT *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_KERNEL_CODE].db = 1;
     gdt[GDT_SEGNUM_KERNEL_CODE].g = 1;
     
-    //TODO: user land segment
+    //user data
+    gdt[GDT_SEGNUM_APP_DATA].limit_low = 0xffff;
+    gdt[GDT_SEGNUM_APP_DATA].limit_high = 0xf;
+    gdt[GDT_SEGNUM_APP_DATA].base_low = 0;
+    gdt[GDT_SEGNUM_APP_DATA].base_mid = 0;
+    gdt[GDT_SEGNUM_APP_DATA].base_high = 0;
+    gdt[GDT_SEGNUM_APP_DATA].type = GDT_TYPE_DATA | GDT_TYPE_DATA_RW;
+    gdt[GDT_SEGNUM_APP_DATA].s = 1;
+    gdt[GDT_SEGNUM_APP_DATA].dpl = 3;
+    gdt[GDT_SEGNUM_APP_DATA].p = 1;
+    gdt[GDT_SEGNUM_APP_DATA].avl = 0;
+    gdt[GDT_SEGNUM_APP_DATA].db = 1;
+    gdt[GDT_SEGNUM_APP_DATA].g = 1;
 
+    //kernel code segment
+    gdt[GDT_SEGNUM_APP_CODE].limit_low = 0xffff;
+    gdt[GDT_SEGNUM_APP_CODE].limit_high = 0xf;
+    gdt[GDT_SEGNUM_APP_CODE].base_low = 0;
+    gdt[GDT_SEGNUM_APP_CODE].base_mid = 0;
+    gdt[GDT_SEGNUM_APP_CODE].base_high = 0;
+    gdt[GDT_SEGNUM_APP_CODE].type = GDT_TYPE_CODE | GDT_TYPE_CODE_RE | GDT_TYPE_CODE_CONFORM;
+    gdt[GDT_SEGNUM_APP_CODE].s = 1;
+    gdt[GDT_SEGNUM_APP_CODE].dpl = 3;
+    gdt[GDT_SEGNUM_APP_CODE].p = 1;
+    gdt[GDT_SEGNUM_APP_CODE].avl = 0;
+    gdt[GDT_SEGNUM_APP_CODE].db = 1;
+    gdt[GDT_SEGNUM_APP_CODE].g = 1;
+    
+    //GDTR
     gdtr->size = GDT_COUNT * sizeof(GDT);
     gdtr->base = (uint32_t)gdt;
 
+    //作ったGDTを読み込む
     lgdt((uint32_t)gdtr);
 }

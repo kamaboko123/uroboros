@@ -12,7 +12,7 @@
 
 
 //vmalloc
-#define VMALLOC_MAN_ADDR    0x00b01000
+#define VMALLOC_MAN_ADDR    0x00a01000
 #define VMALLOC_START       0x03000000
 #define VMALLOC_INIT_END    0x03001000
 #define VMALLOC_MAX_END     0x04000000
@@ -24,11 +24,10 @@
 
 //カーネルのスタック(仮想)
 #define KERNEL_STACK_V      0x03000000
-//#define KERNEL_STACK_V      0x01001000
 #define KERNEL_STACK_TOP_V  0x01000000
 
 //カーネルのスタックサイズ(とりあえず4MB)
-#define KERNEL_STACK_SIZE   KERNEL_STACK_V - KERNEL_STACK_TOP_V
+#define KERNEL_STACK_SIZE   (KERNEL_STACK_V - KERNEL_STACK_TOP_V)
 
 //カーネルのページディレクトリテーブルを配置するアドレス(物理)
 #define KERNEL_PDT          0x00500000
@@ -51,10 +50,27 @@
 
 #define VRAM_SIZE SCREEN_XSIZE * SCREEN_YSIZE * 1
 
-//CPU
-#define CR0_FLAG_PG 0x80000000
+//GDT
+//init_kernel_mem()で初期化する際にはGDTとIDTまとめて1ページで確保するので注意
+#define GDT_IDT_HEAD_ADDR   0x00F00000
+#define GDT_ADDR            GDT_IDT_HEAD_ADDR
+#define GDT_SIZE            1024                        //実際は5つで、5*8=32byteしか使わない
+
+#define GDT_SEGNUM_NULL 0
+#define GDT_SEGNUM_KERNEL_DATA 1
+#define GDT_SEGNUM_KERNEL_CODE 2
+#define GDT_SEGNUM_APP_DATA 3
+#define GDT_SEGNUM_APP_CODE 4
+#define GDT_COUNT 5
+
 
 //intr
 #define PIC_INTR_VEC_BASE 0x20
+
+//IDT
+#define GDTR_ADDR           (GDT_ADDR + GDT_SIZE - 16)  //後方に配置
+#define IDT_ADDR            (GDT_ADDR + GDT_SIZE)
+#define IDT_SIZE            1024
+
 
 #endif
