@@ -2,10 +2,11 @@
 
 //メモリの配置までお任せでとりあえず使いたい用
 Queue8 *q8_make(uint32_t size, uint8_t default_value){
-    Queue8 *q = (Queue8 *)vmalloc(sizeof(Queue8) + sizeof(uint8_t) * size);
-    q8_init(q, (uint8_t *)+ sizeof(Queue8), size, default_value);
+    Queue8 *mem = (Queue8 *)vmalloc(sizeof(Queue8) + sizeof(uint8_t) * size);
+    //先頭をキューの管理用、後ろをバッファにする
+    q8_init(mem, (uint8_t *)(mem) + sizeof(Queue8), size, default_value);
     
-    return q;
+    return mem;
 }
 
 void q8_init(Queue8 *q, uint8_t *buf, uint32_t buf_size, uint8_t default_value){

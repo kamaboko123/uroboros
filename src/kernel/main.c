@@ -32,27 +32,25 @@ void Main(uint64_t *gdt0){
     init_idt((IDT *)IDT_ADDR, (IDTR *)IDTR_ADDR);
 
     
-
-    //割り込み
+    //グラフィック初期化
+    init_palette();
+    init_screen(4);
+    
+    SYSQ = (SystemQueue *)vmalloc(sizeof(SystemQueue));
+    
     io_cli();
-    //init_pic(~(PIC_IMR_IRQ0 | PIC_IMR_IRQ3 | PIC_IMR_IRQ4), PIC_INTR_VEC_BASE);
-    init_pic(0, PIC_INTR_VEC_BASE);
+    init_pic(~(PIC_IMR_IRQ0 | PIC_IMR_IRQ4), PIC_INTR_VEC_BASE);
     
     //pit(タイマ)
     //init_pit(119); //大体1ms
     init_pit(0); //大体18Hz
+    SYSQ->timer = q8_make(256, 0);
     set_idt((IDT *)IDT_ADDR, 0x20, int20_handler);
 
     //serial port
     init_serial_port();
-    //割り込みうまく動かん、ポーリングにしてみる?
-    //set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
-    //set_idt((IDT *)IDT_ADDR, 0x23, int24_handler);
-    //set_idt((IDT *)IDT_ADDR, 0x29, int20_handler);
-
-    //グラフィック初期化
-    init_palette();
-    init_screen(4);
+    SYSQ->com1 = q8_make(256, 0);
+    set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
     /*
     if(get_paging_status()){
@@ -63,19 +61,16 @@ void Main(uint64_t *gdt0){
     }
     */
     
-    SYSQ = (SystemQueue *)vmalloc(sizeof(SystemQueue));
-    SYSQ->timer = q8_make(256, 0);
-    //SYSQ->com1 = q8_make(256, 0);
-    
     io_sti();
 
     uint32_t cnt = 0;
     char s[64];
     char console_str[64];
     char *cs = console_str;
-    print_asc(0, 0, 7, "Welcome to UroborOS!");
+    *cs = '\0';
     for(;;){
-        //interrupt(0x24);
+        print_asc(0, 0, 7, "Welcome to UroborOS!");
+        
         uint8_t data = q8_de(SYSQ->timer);
         if(data != SYSQ->timer->default_value){
             cnt++;
@@ -84,8 +79,17 @@ void Main(uint64_t *gdt0){
         sprintf(s, "cnt: %d", cnt);
         print_asc(0, 16, 7, s);
         
-        //sprintf(s, "in: %s", console_str);
-        //print_asc(0, 16, 7, console_str);
+        //sprintf(s, "SYSQ: %x", (uint32_t)(*SYSQ->timer));
+        //print_asc(0, 32, 7, s);
+        
+        char com1_data = q8_de(SYSQ->com1);
+        if(com1_data != SYSQ->com1->default_value){
+            *cs = com1_data;
+            cs++;
+            *cs = '\0';
+            init_screen(4);
+        }
+        print_asc(0, 32, 7, console_str);
         
         /*
         uint8_t serial_in = read_serial();
