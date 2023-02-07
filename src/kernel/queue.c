@@ -45,3 +45,6 @@ uint32_t q8_usage(Queue8 *q){
     }
     return (q->size - q->head) + q->tail;
 }
+bool q8_empty(Queue8 *q){
+    return (q->head == q->tail);
+}

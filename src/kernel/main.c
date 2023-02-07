@@ -49,9 +49,12 @@ void Main(uint64_t *gdt0){
 
     //serial port
     init_serial_port();
-    SYSQ->com1 = q8_make(256, 0);
+    SYSQ->com1_in = q8_make(256, 0);
+    SYSQ->com1_out = q8_make(256, 0);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
+    Console *console = console_init(SYSQ->com1_in, SYSQ->com1_out);
+
     /*
     if(get_paging_status()){
         print_asc(0, 16, 7, "paging is enable!");
@@ -71,25 +74,14 @@ void Main(uint64_t *gdt0){
     for(;;){
         print_asc(0, 0, 7, "Welcome to UroborOS!");
         
-        uint8_t data = q8_de(SYSQ->timer);
-        if(data != SYSQ->timer->default_value){
-            cnt++;
-            init_screen(4);
+        console_run(console);
+        while(!q8_empty(console->q_out)){
+            serial_putc(q8_de(console->q_out));
         }
-        sprintf(s, "cnt: %d", cnt);
-        print_asc(0, 16, 7, s);
-        
+
         //sprintf(s, "SYSQ: %x", (uint32_t)(*SYSQ->timer));
         //print_asc(0, 32, 7, s);
         
-        char com1_data = q8_de(SYSQ->com1);
-        if(com1_data != SYSQ->com1->default_value){
-            *cs = com1_data;
-            cs++;
-            *cs = '\0';
-            init_screen(4);
-        }
-        print_asc(0, 32, 7, console_str);
         
         /*
         uint8_t serial_in = read_serial();

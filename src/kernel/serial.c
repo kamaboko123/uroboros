@@ -36,7 +36,7 @@ void init_serial_port(){
     io_in8(IO_PORT_COM1 + 2);
     io_in8(IO_PORT_COM1 + 0);
     
-    char str[] = "UroborOS...";
+    char str[] = "UroborOS...\n";
     for(char *s=str; *s != '\0'; s++){
         serial_putc(*s);
     }
@@ -54,7 +54,7 @@ uint8_t read_serial(){
 void int_handler_serial(){
     if(serial_received() == 0) return;
     uint8_t data = io_in8(IO_PORT_COM1);
-    q8_in(SYSQ->com1, data);
+    q8_in(SYSQ->com1_in, data);
     serial_putc(data);
 
     io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
