@@ -1,4 +1,7 @@
-;void lgdt(void)
+extern int_handler_pit
+extern int_handler_serial
+
+;void lgdt(uint32_t gdtr)
 global lgdt
 lgdt:
     mov eax, [esp+4]
@@ -13,6 +16,14 @@ lgdt:
     jmp 0x10:.lgdt_reload
 .lgdt_reload:
     ret
+
+;void lidt(uint32_t idtr)
+global lidt
+lidt:
+    mov eax, [esp+4]
+    lidt [eax]
+    ret
+
 
 global loop
 loop:
@@ -51,6 +62,13 @@ io_out8:
     out dx, al
     ret
 
+;uint8_t io_in8(uint32_t port)
+global io_in8
+io_in8:
+    mov edx, [esp+4]
+    mov eax, 0
+    in al, dx
+    ret
 
 ;int io_load_eflags(void)
 global io_load_eflags
@@ -121,4 +139,60 @@ load_cr0:
     mov eax, cr0
     ret
 
+
+;void int20_handler(void)
+;PIT(IRQ0)
+global int20_handler
+int20_handler:
+    push es
+    push ds
+    pusha
+    call int_handler_pit
+    popa
+    pop ds
+    pop es
+    iret
+
+;void int24_handler(void)
+;serial COM1(IRQ4)
+global int24_handler
+int24_handler:
+    push es
+    push ds
+    pusha
+    call int_handler_serial
+    popa
+    pop ds
+    pop es
+    iret
+
+
+;void int_handler_null(void);
+global int_handler_null
+int_handler_null:
+    ;segment registerの保存
+    ;カーネルコード実行中の割り込みならssは変更されないので保存不要
+    push es
+    push ds
+    ;レジスタの保存
+    pusha
+    
+    ;mov ax, 0x60
+    ;out 0x20, al
+    ;mov eax, [0x00f00ff0]
+    ;inc eax
+    ;mov [0x00f00ff0], eax
+
+    popa
+    pop ds
+    pop es
+    iret
+
+
+;void interrupt(uint32_t num)
+global interrupt
+interrupt:
+    mov eax, [esp+4]
+    int 0x24
+    ret
 

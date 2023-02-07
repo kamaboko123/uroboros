@@ -75,7 +75,7 @@ $(IMG) : $(IPL) $(KERNEL_IMG)
 	mcopy $(KERNEL_IMG) -i $@ ::
 
 run: $(IMG)
-	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy
+	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -serial stdio
 
 debug: $(IMG)
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -S -gdb tcp::10000

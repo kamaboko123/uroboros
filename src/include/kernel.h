@@ -10,5 +10,8 @@
 #include "timer.h"
 #include "asmlib.h"
 #include "stdint.h"
+#include "queue.h"
+#include "serial.h"
+#include "global.h"
 
 #endif

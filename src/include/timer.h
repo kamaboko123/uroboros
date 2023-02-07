@@ -1,7 +1,11 @@
 #ifndef PIT_H
 #define PIT_H
 
+#include "config.h"
 #include "asmlib.h"
+#include "intr.h"
+#include "queue.h"
+#include "global.h"
 
 //IOポートアドレス
 #define PORT_PIT_COUNTER0 0x40
@@ -37,5 +41,6 @@
 #define PIT_CW_SC_COUNTER2 0x02 <<  6
 
 void init_pit(uint16_t c0_freq);
+void int_handler_pit(void);
 
 #endif

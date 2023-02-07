@@ -55,6 +55,7 @@
 #define GDT_IDT_HEAD_ADDR   0x00F00000
 #define GDT_ADDR            GDT_IDT_HEAD_ADDR
 #define GDT_SIZE            1024                        //実際は5つで、5*8=32byteしか使わない
+#define GDTR_ADDR           (GDT_ADDR + GDT_SIZE - 16)  //後方に配置
 
 #define GDT_SEGNUM_NULL 0
 #define GDT_SEGNUM_KERNEL_DATA 1
@@ -68,9 +69,8 @@
 #define PIC_INTR_VEC_BASE 0x20
 
 //IDT
-#define GDTR_ADDR           (GDT_ADDR + GDT_SIZE - 16)  //後方に配置
 #define IDT_ADDR            (GDT_ADDR + GDT_SIZE)
-#define IDT_SIZE            1024
-
+#define IDT_SIZE            256 * 8
+#define IDTR_ADDR           (IDT_ADDR + IDT_SIZE - 16)
 
 #endif
