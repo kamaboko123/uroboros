@@ -49,8 +49,8 @@ void Main(uint64_t *gdt0){
 
     //serial port
     init_serial_port();
-    SYSQ->com1_in = q8_make(256, 0);
-    SYSQ->com1_out = q8_make(256, 0);
+    SYSQ->com1_in = q8_make(256, 0xff);
+    SYSQ->com1_out = q8_make(256, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
     Console *console = console_init(SYSQ->com1_in, SYSQ->com1_out);
@@ -71,26 +71,18 @@ void Main(uint64_t *gdt0){
     char console_str[64];
     char *cs = console_str;
     *cs = '\0';
+    print_asc(0, 0, 7, "Welcome to UroborOS!");
+    uint32_t j = 0;
     for(;;){
-        print_asc(0, 0, 7, "Welcome to UroborOS!");
+        io_hlt();
+        init_screen(4);
         
         console_run(console);
-        while(!q8_empty(console->q_out)){
-            serial_putc(q8_de(console->q_out));
-        }
-
-        //sprintf(s, "SYSQ: %x", (uint32_t)(*SYSQ->timer));
-        //print_asc(0, 32, 7, s);
         
-        
-        /*
-        uint8_t serial_in = read_serial();
-        if(serial_in != 0){
-            sprintf(s, "serial: %x", serial_in);
+        while(!q8_empty(SYSQ->com1_out)){
+            char c = q8_de(console->q_out);
+            serial_putc(c);
         }
-        print_asc(0, 32, 7, s);
-        print_asc(0, 48, 7, "aaa");
-        */
     }
     
     //char s[64];

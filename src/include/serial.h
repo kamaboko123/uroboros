@@ -28,6 +28,7 @@
 #define COM_LINE_PARITY_NONE 0 << 3
 
 #define COM_LINE_STATUS_READ_READY 1 << 0
+#define COM_LINE_STATUS_TRANSMIT_EMPTY 1 << 5
 
 //どの割り込みを有効にするか
 #define COM_IE_DA            1 << 0
@@ -39,6 +40,7 @@ void init_serial_port();
 void int_handler_serial();
 
 bool serial_received();
+bool serial_ready_transmit();
 uint8_t read_serial();
 void serial_putc(char c);
 

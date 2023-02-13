@@ -15,5 +15,6 @@ typedef struct Console{
 
 Console *console_init(Queue8 *q_in, Queue8 *q_out);
 void console_run(Console *con);
+void console_exec(Console *con, char *cmd);
 
 #endif

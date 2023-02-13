@@ -19,4 +19,5 @@ void q8_in(Queue8 *q, uint8_t data);
 uint8_t q8_de(Queue8 *q);
 uint32_t q8_usage(Queue8 *q);
 bool q8_empty(Queue8 *q);
+bool q8_full(Queue8 *q);
 #endif
