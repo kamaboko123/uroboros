@@ -50,7 +50,7 @@ void Main(uint64_t *gdt0){
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
-    SYSQ->com1_out = q8_make(256, 0xff);
+    SYSQ->com1_out = q8_make(1024, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
     Console *console = console_init(SYSQ->com1_in, SYSQ->com1_out);
