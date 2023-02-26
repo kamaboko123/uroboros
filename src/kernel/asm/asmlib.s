@@ -85,7 +85,7 @@ io_store_eflags:
     popf
     ret
 
-
+;カーネルスタック(再配置前、物理アドレス)
 ORG_STACK_BASE EQU 0x00031000
 
 ;void enable_paging(unsigned int pdt_ddr, unsigned int new_stack_base_phy, unsigned int new_stack_base_virt)
@@ -144,26 +144,37 @@ load_cr0:
 ;PIT(IRQ0)
 global int20_handler
 int20_handler:
-    push es
     push ds
+    push es
+    push fs
+    push gs
     pusha
     call int_handler_pit
+
+global int20_ret
+int20_ret:
     popa
-    pop ds
+    pop gs
+    pop fs
     pop es
+    pop ds
     iret
 
 ;void int24_handler(void)
 ;serial COM1(IRQ4)
 global int24_handler
 int24_handler:
-    push es
     push ds
+    push es
+    push fs
+    push gs
     pusha
     call int_handler_serial
     popa
-    pop ds
+    pop gs
+    pop fs
     pop es
+    pop ds
     iret
 
 
@@ -172,8 +183,10 @@ global int_handler_null
 int_handler_null:
     ;segment registerの保存
     ;カーネルコード実行中の割り込みならssは変更されないので保存不要
-    push es
     push ds
+    push es
+    push fs
+    push gs
     ;レジスタの保存
     pusha
     
@@ -184,8 +197,10 @@ int_handler_null:
     ;mov [0x00f00ff0], eax
 
     popa
-    pop ds
+    pop gs
+    pop fs
     pop es
+    pop ds
     iret
 
 
@@ -194,5 +209,29 @@ global interrupt
 interrupt:
     mov eax, [esp+4]
     int 0x24
+    ret
+
+;void context_switch(Context **old, Context *new)
+global context_switch
+    mov eax, [esp + 4] ;old
+    mov edx, [esp + 8] ;new
+    
+    ;struct Context
+    push ebp
+    push ebx
+    push esi
+    push edi
+
+    ;switch task
+    ;save old context
+    mov (eax), esp
+    ;restore new context
+    mov esp, edx
+    
+    pop edi
+    pop esi
+    pop ebx
+    pop ebp
+
     ret
 

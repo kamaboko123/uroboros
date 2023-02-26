@@ -75,6 +75,33 @@ void console_exec(Console *con, char *cmd){
             p = p->next;
         }
     }
+    /*
+    else if(strcmp(cmd, "pmemtable\r") == 0){
+        char str[128];
+        P_MEMMAN *memman = get_phy_memman();
+
+        bool flg = false;
+        uint32_t start_addr = 0;
+        uint32_t end_addr = 0;
+        for(int i = 0; i < PMALLOC_MAX_PAGE; i++){
+            if(memman->tbl[i] == 1){
+                if(!flg){
+                    start_addr = memman->base_addr + (i * MEM_PAGE_SIZE);
+                }
+                end_addr = memman->base_addr + ((i + 1) * MEM_PAGE_SIZE) - 1;
+                flg = true;
+            }
+            else{
+                if(end_addr != 0){
+                    sprintf(str, "[page] 0x%08x - 0x%08x\n", start_addr, end_addr);
+                    console_putstr(con, str);
+                }
+                start_addr = 0;
+                end_addr = 0;
+                flg = false;
+            }
+        }
+    }*/
     else{
         char str[] = "[Error] command not found\r\n";
         console_putstr(con, str);

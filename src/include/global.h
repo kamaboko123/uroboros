@@ -2,11 +2,7 @@
 #define GLOBAL_H
 
 #include "queue.h"
+#include "mtask.h"
 
-typedef struct SystemQueue{
-    Queue8 *timer;
-    Queue8 *com1_in;
-    Queue8 *com1_out;
-} SystemQueue;
 
 #endif

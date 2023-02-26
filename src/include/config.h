@@ -26,6 +26,9 @@
 #define KERNEL_STACK_V      0x03000000
 #define KERNEL_STACK_TOP_V  0x01000000
 
+//カーネルのスタック(物理、再配置前)
+#define ORG_KERNAL_STACK_P  0x00031000
+
 //カーネルのスタックサイズ(とりあえず4MB)
 #define KERNEL_STACK_SIZE   (KERNEL_STACK_V - KERNEL_STACK_TOP_V)
 
@@ -72,5 +75,8 @@
 #define IDT_ADDR            (GDT_ADDR + GDT_SIZE)
 #define IDT_SIZE            256 * 8
 #define IDTR_ADDR           (IDT_ADDR + IDT_SIZE - 16)
+
+
+#define KTASK_STACK_SIZE 2048
 
 #endif

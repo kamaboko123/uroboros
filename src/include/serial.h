@@ -7,7 +7,6 @@
 #include "intr.h"
 #include "global.h"
 
-
 #define IO_PORT_COM1 0x3f8
 
 #define IO_PORT_COM_OFFSET_IE 1

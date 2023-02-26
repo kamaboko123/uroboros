@@ -2,6 +2,10 @@
 
 SystemQueue *SYSQ;
 
+void mainloop(void){
+    
+}
+
 void Main(uint64_t *gdt0){
     //カーネル関連の最低限のページを初期化
     //カーネルの再配置
@@ -50,32 +54,25 @@ void Main(uint64_t *gdt0){
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
-    SYSQ->com1_out = q8_make(1024, 0xff);
+    SYSQ->com1_out = q8_make(2000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
+    //シリアルポートとコンソールを接続
     Console *console = console_init(SYSQ->com1_in, SYSQ->com1_out);
-
-    /*
-    if(get_paging_status()){
-        print_asc(0, 16, 7, "paging is enable!");
-    }
-    else{
-        print_asc(0, 16, 7, "paging is disable!");
-    }
-    */
     
+    //マルチタスク
+    init_mtask();
+
     io_sti();
 
-    uint32_t cnt = 0;
     char s[64];
     char console_str[64];
     char *cs = console_str;
     *cs = '\0';
     print_asc(0, 0, 7, "Welcome to UroborOS!");
-    uint32_t j = 0;
     for(;;){
         io_hlt();
-        init_screen(4);
+        //init_screen(0);
         
         console_run(console);
         
@@ -84,22 +81,6 @@ void Main(uint64_t *gdt0){
             serial_putc(c);
         }
     }
-    
-    //char s[64];
-    //sprintf(s, "g: 0x%08x", *((uint64_t *)(gdt+1)));
-    //print_asc(0, 32, 7, s);
-    
-    /*
-    char *p = pmalloc_4k();
-    sprintf(s, "[palloc_4k] alloc : 0x%08x", p);
-    print_asc(0, 48, 7, s);
-    for(int i = 1; i < 5; i++){
-        uint32_t mem =(uint32_t) vmalloc(i * 0x1000+3);
-        *(uint32_t *)mem = 1000;
-        sprintf(s, "[vmalloc] 0x%08x - 0x%08x", mem, i*0x1000 - 1);
-        print_asc(0, i * 16 + 64, 7, s);
-    }
-    */
     
 }
 
