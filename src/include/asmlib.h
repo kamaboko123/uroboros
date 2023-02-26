@@ -22,4 +22,19 @@ void int24_handler(void);
 void interrupt(uint32_t num);
 
 void int20_ret(void);
+
+
+
+typedef struct Context{
+    //low address(stack top)
+    //eaxやebxはここでは保持不要
+    //context_switchが呼ばれる際に（必要であれば）スタックに保存されている
+    uint32_t edi;
+    uint32_t esi;
+    uint32_t ebx;
+    uint32_t ebp;
+    uint32_t eip;
+} Context;
+
+void context_switch(struct Context **old_context, struct Context *new_context);
 #endif

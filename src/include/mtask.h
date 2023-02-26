@@ -5,19 +5,9 @@
 #include "graphic.h"
 #include "stdbool.h"
 #include "mem.h"
+#include "asmlib.h"
 
 #define PROCESS_COUNT 16
-
-typedef struct Context{
-    //low address(stack top)
-    //eaxやebxはここでは保持不要
-    //context_switchが呼ばれる際に（必要であれば）スタックに保存されている
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebx;
-    uint32_t ebp;
-    uint32_t eip;
-} Context;
 
 typedef struct IntrFrame{
     //low address(stack top)
@@ -81,5 +71,9 @@ typedef struct Cpu{
 
 void task_idle(void);
 void init_mtask();
+
+
+Process *proc_alloc(void);
+void ktask_init(Process *proc, void (*func)(void));
 
 #endif

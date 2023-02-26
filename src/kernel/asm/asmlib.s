@@ -211,8 +211,9 @@ interrupt:
     int 0x24
     ret
 
-;void context_switch(Context **old, Context *new)
+;void context_switch(Context **old_context, Context *new_context)
 global context_switch
+context_switch:
     mov eax, [esp + 4] ;old
     mov edx, [esp + 8] ;new
     
