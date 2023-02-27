@@ -34,7 +34,8 @@ typedef struct IntrFrame{
     
     //pushed by hardware when interrupt
     //these data are used for return from interrupt handler
-    uint32_t error;
+    
+    //uint32_t error; //一部の割り込み時にはerror codeがpushされるが、今はint20を前提にしておりint20ではerror codeはないので不要
     uint32_t eip; // return address is used by iret
     uint16_t cs;  // return code segment is used by iret
     uint16_t padding5;
@@ -44,7 +45,7 @@ typedef struct IntrFrame{
     uint32_t esp;
     uint16_t ss;
     uint16_t padding6;
-} __attribute__((__packed__)) IntrFrame;
+} IntrFrame;
 
 typedef enum ProcessStatus{
     NOALLOC,

@@ -211,6 +211,12 @@ interrupt:
     int 0x24
     ret
 
+;void magic_break(void)
+global magic_break
+magic_break:
+    xchg bx, bx
+    ret
+
 ;void context_switch(Context **old_context, Context *new_context)
 global context_switch
 context_switch:
@@ -225,7 +231,7 @@ context_switch:
 
     ;switch task
     ;save old context
-    mov (eax), esp
+    mov [eax], esp
     ;restore new context
     mov esp, edx
     

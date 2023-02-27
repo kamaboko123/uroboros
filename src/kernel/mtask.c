@@ -31,26 +31,45 @@ void ktask_init(Process *proc, void (*func)(void)){
     uint8_t *task_stack = vmalloc(KTASK_STACK_SIZE);
 
     //スタックポインタ計算用
-    uint8_t *sp = task_stack + KTASK_STACK_SIZE + 4;
+    uint8_t *sp = task_stack + KTASK_STACK_SIZE;
     
-    proc->context = (Context *)sp;
-    sp -= sizeof(Context);
-
-    proc->context->eip = (uint32_t)int20_ret;
-
     //割り込みのフレーム設定
-    proc->iframe = (IntrFrame *)sp;
     sp -= sizeof(IntrFrame);
+    proc->iframe = (IntrFrame *)sp;
     //interrput frame
     proc->iframe->gs = 1 * 8;
     proc->iframe->fs = 1 * 8;
     proc->iframe->es = 1 * 8;
     proc->iframe->ds = 1 * 8;
+    //割り込みからの戻り先は渡された関数
+    //プロセスの開始アドレスになる
     proc->iframe->eip = (uint32_t)func;
     proc->iframe->cs = 2 * 8;
+    //新しいスタックの底
+    proc->iframe->ebp = (uint32_t)task_stack + KTASK_STACK_SIZE;
     
-    //エントリポイント(割り込みからの戻り先)
-    sp -= 4;
-    *sp = (uint32_t)func;
+    sp -= sizeof(Context);
+    proc->context = (Context *)sp;
     
+    //まずは割り込みからの戻り処理に行く
+    proc->context->eip = (uint32_t)int20_ret;
+
+    proc->status = RUNNABLE;
+}
+
+void sched(void){
+    Process *proc = NULL;
+    while(true){
+        for(int i = 0; i < PROCESS_COUNT; i++){
+            proc = &CPU->sched.proc[i];
+            if(proc != CPU->proc && proc->status == RUNNABLE){
+                proc->status = RUNNING;
+                context_switch(&CPU->proc->context, proc->context);
+            }
+        }
+    }
+}
+
+void sched_handler(void){
+    CPU->proc->status = RUNNABLE;
 }

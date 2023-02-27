@@ -14,7 +14,7 @@
 //vmalloc
 #define VMALLOC_MAN_ADDR    0x00a01000
 #define VMALLOC_START       0x03000000
-#define VMALLOC_INIT_END    0x03001000
+#define VMALLOC_INIT_END    0x03100000
 #define VMALLOC_MAX_END     0x04000000
 
 #define VMALLOC_ALIGNMENT   0x00000010
@@ -78,5 +78,9 @@
 
 
 #define KTASK_STACK_SIZE 2048
+
+// debug macro
+// magic break for bochs
+#define BREAK() __asm__("xchg %bx, %bx")
 
 #endif
