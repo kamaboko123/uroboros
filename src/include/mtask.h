@@ -6,7 +6,9 @@
 #include "stdbool.h"
 #include "mem.h"
 #include "asmlib.h"
+#include "serial.h"
 
+#define PROCESS_NAME_LENGTH 16
 #define PROCESS_COUNT 16
 
 typedef struct IntrFrame{
@@ -59,9 +61,11 @@ typedef struct Process{
     IntrFrame *iframe;
     Context *context;
     ProcessStatus status;
+    char name[PROCESS_NAME_LENGTH];
 } Process;
 
 typedef struct Scheduler{
+    Process *sched_proc;
     Process proc[PROCESS_COUNT];
 } Scheduler;
 
@@ -75,6 +79,10 @@ void init_mtask();
 
 
 Process *proc_alloc(void);
-void ktask_init(Process *proc, void (*func)(void));
+void ktask_init(Process *proc, char *name, void (*func)(void));
+void sched(void);
+void sched_handler(void);
+
+extern SystemQueue *SYSQ;
 
 #endif

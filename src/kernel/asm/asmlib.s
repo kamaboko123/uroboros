@@ -1,5 +1,6 @@
 extern int_handler_pit
 extern int_handler_serial
+extern sched_handler
 
 ;void lgdt(uint32_t gdtr)
 global lgdt
@@ -149,7 +150,8 @@ int20_handler:
     push fs
     push gs
     pusha
-    call int_handler_pit
+    ;call int_handler_pit
+    call sched_handler
 
 global int20_ret
 int20_ret:
@@ -176,6 +178,24 @@ int24_handler:
     pop es
     pop ds
     iret
+
+;void int40_handler(void)
+;serial context_switch(test)
+global int40_handler
+int40_handler:
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call sched_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    iret
+
 
 
 ;void int_handler_null(void);
@@ -208,7 +228,7 @@ int_handler_null:
 global interrupt
 interrupt:
     mov eax, [esp+4]
-    int 0x24
+    int 0x40
     ret
 
 ;void magic_break(void)

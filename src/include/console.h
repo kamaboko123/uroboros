@@ -4,6 +4,7 @@
 #include "mem.h"
 #include "global.h"
 #include "queue.h"
+#include "mtask.h"
 
 #define CONSOLE_LINE_BUF_SIZE 256
 typedef struct Console{
@@ -18,5 +19,7 @@ void console_run(Console *con);
 void console_exec(Console *con, char *cmd);
 void console_clear_line(Console *con);
 void console_putstr(Console *con, char *str);
+
+extern Cpu *CPU;
 
 #endif

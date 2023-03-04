@@ -75,6 +75,20 @@ void console_exec(Console *con, char *cmd){
             p = p->next;
         }
     }
+    else if(strcmp(cmd, "proc\r") == 0){
+        char str[128];
+        for(int i = 0; i < PROCESS_COUNT; i++){
+            Process *proc = &CPU->sched.proc[i];
+            if(proc->status == NOALLOC) continue;
+            sprintf(str, "[%d] %s (%d)\n", i, proc->name, proc->status);
+            console_putstr(con, str);
+        }
+    }
+    else if(strcmp(cmd, "c\r") == 0){
+        console_putstr(con, "switch!");
+        interrupt(0x40);
+    }
+
     /*
     else if(strcmp(cmd, "pmemtable\r") == 0){
         char str[128];

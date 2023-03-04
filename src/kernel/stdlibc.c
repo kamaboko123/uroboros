@@ -9,7 +9,7 @@ uint32_t sprintf(char *s, char *format, ...){
     char disp_digit;
     int pad_flg;
     uint32_t conv_len;
-    char tmp[16];
+    char tmp[256];
     int i;
     
     int data_int;
@@ -70,6 +70,14 @@ uint32_t sprintf(char *s, char *format, ...){
             }
             if(*format == 'X'){
                 conv_len = to_hex_asc(tmp, my_va_arg(args, int), true);
+            }
+            if(*format == 's'){
+                char *str = my_va_arg(args, char *);
+                strncpy(tmp, str, 256);
+                conv_len = strlen(tmp);
+                if(conv_len > 255){
+                    conv_len = 255;
+                }
             }
             
             if(pad_flg && (conv_len < disp_digit)){
@@ -307,3 +315,22 @@ uint32_t roundup(uint32_t x, uint32_t n){
 uint32_t rounddown(uint32_t x, uint32_t n){
     return (x / n) * n;
 }
+
+
+char *strncpy(char *s1, char *s2, int n){
+    bool end = false;
+    int i;
+    for(i = 0; i < n; i++){
+        if(end){
+            s1[i] = '\0';
+            continue;
+        }
+        if(s2[i] == '\0'){
+            s1[i] = '\0';
+            end = true;
+        }
+        s1[i] = s2[i];
+    }
+    return(s1);
+}
+

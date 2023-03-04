@@ -20,6 +20,7 @@ void int_handler_null(void);
 void int20_handler(void);
 void int20_ret(void);
 void int24_handler(void);
+void int40_handler(void);
 void interrupt(uint32_t num);
 
 void magic_break(void);

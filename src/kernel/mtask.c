@@ -20,13 +20,17 @@ Process *proc_alloc(void){
         proc = &CPU->sched.proc[i];
         if(proc->status == NOALLOC){
             proc->status = INIT;
+            break;
         }
     }
     io_sti();
     return proc;
 }
 
-void ktask_init(Process *proc, void (*func)(void)){
+void ktask_init(Process *proc, char *name, void (*func)(void)){
+
+    strncpy(proc->name, name, PROCESS_NAME_LENGTH);
+
     //サイズこれでいい？
     uint8_t *task_stack = vmalloc(KTASK_STACK_SIZE);
 
@@ -37,14 +41,14 @@ void ktask_init(Process *proc, void (*func)(void)){
     sp -= sizeof(IntrFrame);
     proc->iframe = (IntrFrame *)sp;
     //interrput frame
-    proc->iframe->gs = 1 * 8;
-    proc->iframe->fs = 1 * 8;
-    proc->iframe->es = 1 * 8;
-    proc->iframe->ds = 1 * 8;
+    proc->iframe->gs = GDT_SEGNUM_KERNEL_DATA << 3;
+    proc->iframe->fs = GDT_SEGNUM_KERNEL_DATA << 3;
+    proc->iframe->es = GDT_SEGNUM_KERNEL_DATA << 3;
+    proc->iframe->ds = GDT_SEGNUM_KERNEL_DATA << 3;
     //割り込みからの戻り先は渡された関数
     //プロセスの開始アドレスになる
     proc->iframe->eip = (uint32_t)func;
-    proc->iframe->cs = 2 * 8;
+    proc->iframe->cs = GDT_SEGNUM_KERNEL_CODE << 3;
     //新しいスタックの底
     proc->iframe->ebp = (uint32_t)task_stack + KTASK_STACK_SIZE;
     
@@ -62,14 +66,33 @@ void sched(void){
     while(true){
         for(int i = 0; i < PROCESS_COUNT; i++){
             proc = &CPU->sched.proc[i];
-            if(proc != CPU->proc && proc->status == RUNNABLE){
+            if(proc != CPU->sched.sched_proc && proc != CPU->proc && proc->status == RUNNABLE){
+                /*
+                for(char *c=proc->name; *c != '\0'; c++){
+                    serial_putc(*c);
+                }
+                serial_putc('\n');
+                */
+                CPU->proc = proc;
                 proc->status = RUNNING;
-                context_switch(&CPU->proc->context, proc->context);
+                BREAK();
+                context_switch(&CPU->sched.sched_proc->context, proc->context);
             }
         }
     }
 }
 
 void sched_handler(void){
+    io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
     CPU->proc->status = RUNNABLE;
+    /*
+    for(char *c="task switch! "; *c != '\0'; c++){
+        serial_putc(*c);
+    }
+    for(char *c=CPU->proc->name; *c != '\0'; c++){
+        serial_putc(*c);
+    }
+    serial_putc('>');
+    */
+    context_switch(&CPU->proc->context, CPU->sched.sched_proc->context);
 }

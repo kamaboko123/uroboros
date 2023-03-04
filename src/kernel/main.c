@@ -3,6 +3,8 @@
 SystemQueue *SYSQ;
 Console *console;
 void mainloop(void);
+void task_a(void);
+void task_console(void);
 
 void Main(uint64_t *gdt0){
     //カーネル関連の最低限のページを初期化
@@ -52,23 +54,40 @@ void Main(uint64_t *gdt0){
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
-    SYSQ->com1_out = q8_make(256, 0xff);
+    SYSQ->com1_out = q8_make(4000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
+    
+    //set_idt((IDT *)IDT_ADDR, 0x40, int40_handler);
     
     //シリアルポートとコンソールを接続
     console = console_init(SYSQ->com1_in, SYSQ->com1_out);
     
     //マルチタスク
     init_mtask();
-    Process *p = proc_alloc();
-    ktask_init(p, mainloop);
-    Context *tmp = vmalloc(sizeof(Context));
-    BREAK();
-    context_switch(&tmp, p->context);
+    Process *p;
+    
+    p = proc_alloc();
+    ktask_init(p, "sched", sched);
+    CPU->sched.sched_proc = p;
+    
+    p = proc_alloc();
+    ktask_init(p, "mainloop", mainloop);
+   
+    p = proc_alloc();
+    ktask_init(p, "task_console", task_console);
+    
+    //Context *tmp = vmalloc(sizeof(Context));
+    //BREAK();
+    p = proc_alloc();
+    ktask_init(p, "dummy", 0);
+    p->status = RUNNING;
+    CPU->proc = p;
+    
+    //context_switch(&tmp, p->context);
+    context_switch(&p->context, CPU->sched.sched_proc->context);
 }
 
 void mainloop(void){
-    __asm__("xchg %bx, %bx");
     char console_str[64];
     char *cs = console_str;
     *cs = '\0';
@@ -76,12 +95,28 @@ void mainloop(void){
     io_sti();
     for(;;){
         io_hlt();
-        //init_screen(0);
-        
+        init_screen(4);
+        /*
+        //console_run(console);
+        while(!q8_empty(SYSQ->com1_out)){
+            char c = q8_de(console->q_out);
+            serial_putc(c);
+        }
+        */
+    }   
+}
+
+
+void task_console(){
+    io_sti();
+    for(;;){
+        io_hlt();
+        init_screen(4);
         console_run(console);
         while(!q8_empty(SYSQ->com1_out)){
             char c = q8_de(console->q_out);
             serial_putc(c);
         }
-    }   
+    } 
 }
+
