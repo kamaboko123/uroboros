@@ -140,6 +140,28 @@ load_cr0:
     mov eax, cr0
     ret
 
+;uint32_t load_int_flag(void)
+global load_int_flag
+load_int_flag:
+    pushf
+    pop eax
+    and eax, 0x00000200
+    shr eax, 0x09
+    ret
+
+
+;void store_int_flag(bool int_flag)
+global store_int_flag
+store_int_flag:
+    mov eax, [esp + 4]
+    sub eax, 0
+    jz _clear_int_flag
+_set_int_flag:
+    sti
+    ret
+_clear_int_flag:
+    cli
+    ret
 
 ;void int20_handler(void)
 ;PIT(IRQ0)

@@ -6,7 +6,7 @@ void mainloop(void);
 void task_a(void);
 void task_console(void);
 
-void Main(uint64_t *gdt0){
+void Main(uint8_t *kargs, ...){
     //カーネル関連の最低限のページを初期化
     //カーネルの再配置
     init_kernel_mem();
@@ -103,6 +103,11 @@ void mainloop(void){
             serial_putc(c);
         }
         */
+        char str[64];
+        sprintf(str, "0x%08x\n", load_int_flag());
+        for(char *c=str; *c!='\0'; c++){
+            serial_putc(*c);
+        }
     }   
 }
 
@@ -117,6 +122,7 @@ void task_console(){
             char c = q8_de(console->q_out);
             serial_putc(c);
         }
+        
     } 
 }
 

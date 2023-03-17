@@ -2,6 +2,7 @@
 #define ASMLIB_H
 
 #include "stdint.h"
+#include "stdbool.h"
 
 void lgdt(uint32_t gdtr);
 void lidt(uint32_t idtr);
@@ -14,7 +15,10 @@ void io_store_eflags(uint32_t flags);
 void io_out8(uint32_t port, uint32_t data);
 uint8_t io_in8(uint32_t port);
 void enable_paging(uint32_t pdt_ddr, uint32_t new_stack_base_phy, uint32_t new_stack_base_virt);
-int load_cr0(void);
+uint32_t load_cr0(void);
+bool load_int_flag(void);
+void store_int_flag(bool int_flag);
+
 
 void int_handler_null(void);
 void int20_handler(void);
