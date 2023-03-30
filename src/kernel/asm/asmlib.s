@@ -172,8 +172,8 @@ int20_handler:
     push fs
     push gs
     pusha
-    ;call int_handler_pit
-    call sched_handler
+    call int_handler_pit
+    ;call sched_handler
 
 global int20_ret
 int20_ret:

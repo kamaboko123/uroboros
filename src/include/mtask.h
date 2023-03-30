@@ -7,6 +7,7 @@
 #include "mem.h"
 #include "asmlib.h"
 #include "serial.h"
+#include "timer.h"
 
 #define PROCESS_NAME_LENGTH 16
 #define PROCESS_COUNT 16

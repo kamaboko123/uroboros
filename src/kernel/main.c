@@ -1,6 +1,7 @@
 #include "kernel.h"
 
 SystemQueue *SYSQ;
+TIMERCTL *timerctl;
 Console *console;
 void mainloop(void);
 void task_a(void);
@@ -51,6 +52,11 @@ void Main(uint8_t *kargs, ...){
     SYSQ->timer = q8_make(256, 0);
     set_idt((IDT *)IDT_ADDR, 0x20, int20_handler);
 
+    //システムタイマ
+    init_timer();
+    SYSQ->task_timer = q8_make(256, 0);
+    alloc_timer(SYSQ->task_timer, 18);
+
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
@@ -96,6 +102,19 @@ void mainloop(void){
     for(;;){
         io_hlt();
         init_screen(4);
+        if(!q8_empty(SYSQ->task_timer)){
+            q8_de(SYSQ->task_timer);
+            serial_putc('A');
+        }
+        
+        /*
+        char str[64];
+        sprintf(str, "task_timer count: %d\n", timerctl->t->next->count);
+        for(char *c=str; *c!='\0'; c++){
+            serial_putc(*c);
+        }*/
+        
+        
         /*
         //console_run(console);
         while(!q8_empty(SYSQ->com1_out)){
@@ -103,11 +122,14 @@ void mainloop(void){
             serial_putc(c);
         }
         */
+        
+        /*
         char str[64];
         sprintf(str, "0x%08x\n", load_int_flag());
         for(char *c=str; *c!='\0'; c++){
             serial_putc(*c);
         }
+        */
     }   
 }
 
@@ -116,7 +138,7 @@ void task_console(){
     io_sti();
     for(;;){
         io_hlt();
-        init_screen(4);
+        init_screen(3);
         console_run(console);
         while(!q8_empty(SYSQ->com1_out)){
             char c = q8_de(console->q_out);

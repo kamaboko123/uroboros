@@ -27,16 +27,16 @@ void init_serial_port(){
     io_out8(IO_PORT_COM1 + IO_PORT_COM_OFFSET_IE, COM_IE_DA);
     
     //TODO: 調べる
-    io_out8(IO_PORT_COM1 + IO_PORT_COM_OFFSET_MODEM_CTL, 0x01);
+    io_out8(IO_PORT_COM1 + IO_PORT_COM_OFFSET_MODEM_CTL, 0x00);
     //io_out8(IO_PORT_COM1 + IO_PORT_COM_OFFSET_MODEM_CTL, 0x0b);
     
     //すでに存在する割り込みをクリアしておく
-    io_in8(IO_PORT_COM1 + 2);
-    io_in8(IO_PORT_COM1 + 0);
-    io_in8(IO_PORT_COM1 + 0);
-    io_in8(IO_PORT_COM1 + 0);
-    io_in8(IO_PORT_COM1 + 0);
-    io_in8(IO_PORT_COM1 + 0);
+    //io_in8(IO_PORT_COM1 + 2);
+    //io_in8(IO_PORT_COM1 + 0);
+    //io_in8(IO_PORT_COM1 + 0);
+    //io_in8(IO_PORT_COM1 + 0);
+    //io_in8(IO_PORT_COM1 + 0);
+    //io_in8(IO_PORT_COM1 + 0);
     
     char str[] = "UroborOS...\r\n";
     for(char *s=str; *s != '\0'; s++){
@@ -53,19 +53,21 @@ bool serial_ready_transmit() {
 }
 
 uint8_t read_serial(){
-    while(serial_received() == 0);
+    while(!serial_received());
     return io_in8(IO_PORT_COM1);
 }
 
 void int_handler_serial(){
-    if(serial_received() == 0) return;
-    uint8_t data = io_in8(IO_PORT_COM1);
+    uint8_t data = read_serial();
     q8_in(SYSQ->com1_in, data);
 
     io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
 }
 
 void serial_putc(char c){
+    bool iflg = load_int_flag();
+    io_cli();
     while(!serial_ready_transmit());
     io_out8(IO_PORT_COM1, c);
+    store_int_flag(iflg);
 }

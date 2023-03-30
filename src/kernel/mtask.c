@@ -83,7 +83,8 @@ void sched(void){
 }
 
 void sched_handler(void){
-    io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
+    //io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
+    //tick_timer();
     CPU->proc->status = RUNNABLE;
     /*
     for(char *c="task switch! "; *c != '\0'; c++){
