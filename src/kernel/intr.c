@@ -58,4 +58,14 @@ void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void)){
     idt->flags = IDT_FLAG_INT_GATE | IDT_FLAG_D_32 | IDT_FLAG_DPL_0 | IDT_FLAG_P;
 }
 
-
+void int_handler(IntrFrame iframe){
+    if(iframe.intrnum == 0x20){
+        int_handler_pit();
+    }
+    else if(iframe.intrnum == 0x24){
+        int_handler_serial();
+    }
+    else {
+        int_handler_null();
+    }
+}

@@ -5,7 +5,7 @@
 #include "asmlib.h"
 #include "intr.h"
 #include "queue.h"
-#include "global.h"
+#include "mtask.h"
 
 //IOポートアドレス
 #define PORT_PIT_COUNTER0 0x40

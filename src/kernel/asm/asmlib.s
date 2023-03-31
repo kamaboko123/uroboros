@@ -1,4 +1,5 @@
 extern int_handler_pit
+extern int_handler
 extern int_handler_serial
 extern sched_handler
 
@@ -167,13 +168,15 @@ _clear_int_flag:
 ;PIT(IRQ0)
 global int20_handler
 int20_handler:
+    push 0x20
     push ds
     push es
     push fs
     push gs
     pusha
-    call int_handler_pit
+    ;call int_handler_pit
     ;call sched_handler
+    call int_handler
 
 global int20_ret
 int20_ret:
@@ -182,47 +185,34 @@ int20_ret:
     pop fs
     pop es
     pop ds
+    add esp, 4
     iret
 
 ;void int24_handler(void)
 ;serial COM1(IRQ4)
 global int24_handler
 int24_handler:
+    push 0x24
     push ds
     push es
     push fs
     push gs
     pusha
-    call int_handler_serial
+    ;call int_handler_serial
+    call int_handler
     popa
     pop gs
     pop fs
     pop es
     pop ds
+    add esp, 4
     iret
-
-;void int40_handler(void)
-;serial context_switch(test)
-global int40_handler
-int40_handler:
-    push ds
-    push es
-    push fs
-    push gs
-    pusha
-    call sched_handler
-    popa
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    iret
-
 
 
 ;void int_handler_null(void);
 global int_handler_null
 int_handler_null:
+    push 0x00
     ;segment registerの保存
     ;カーネルコード実行中の割り込みならssは変更されないので保存不要
     push ds
@@ -243,6 +233,7 @@ int_handler_null:
     pop fs
     pop es
     pop ds
+    add esp, 4
     iret
 
 

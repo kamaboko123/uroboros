@@ -3,6 +3,9 @@
 
 #include "config.h"
 #include "asmlib.h"
+#include "timer.h"
+#include "serial.h"
+#include "iframe.h"
 
 #define IO_PORT_PIC1_COMMAND 0x20
 #define IO_PORT_PIC1_DATA 0x21
@@ -69,5 +72,9 @@ typedef struct IDTR{
 void init_pic(uint16_t imr, uint32_t intr_vec_base);
 void init_idt(IDT *idt0, IDTR *idtr);
 void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void));
+
+
+void int_handler(IntrFrame iframe);
+
 
 #endif
