@@ -54,7 +54,10 @@ void ktask_kill(Process *proc){
     bool iflag = load_int_flag();
     io_cli();
 
-    if(proc->status == RUNNING || proc->status == RUNNABLE) return;
+    if((proc->status != RUNNING) || (proc->status != RUNNABLE)){
+        store_int_flag(iflag);
+        return;
+    }
 
     //現在実行中のプロセスが指定された
     if(proc == CPU->proc){

@@ -55,12 +55,17 @@ void console_putstr(Console *con, char *str){
     }
 }
 
-void console_exec(Console *con, char *cmd){
-    if(strcmp(cmd, "uname\r") == 0){
+void console_exec(Console *con, char *line){
+    Command cmd;
+    parse_command(&cmd, line);
+
+    console_putstr(con, cmd.command);
+
+    if(strcmp(cmd.command, "uname") == 0){
         char str[] = "UroborOS v0.0.1\r\n";
         console_putstr(con, str);
     }
-    else if(strcmp(cmd, "vmemtable\r") == 0){
+    else if(strcmp(cmd.command, "vmemtable") == 0){
         char str[128];
         V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
         V_MEM_BLOCKINFO *p = memman->entry;
@@ -79,7 +84,7 @@ void console_exec(Console *con, char *cmd){
             p = p->next;
         }
     }
-    else if(strcmp(cmd, "proc\r") == 0){
+    else if(strcmp(cmd.command, "proc") == 0){
         char str[128];
         for(int i = 0; i < PROCESS_COUNT; i++){
             Process *proc = &CPU->sched.proc[i];
@@ -88,16 +93,28 @@ void console_exec(Console *con, char *cmd){
             console_putstr(con, str);
         }
     }
-    else if(strcmp(cmd, "task_a\r") == 0){
+    else if(strcmp(cmd.command, "task_a") == 0){
         Process *p = proc_alloc();
         ktask_init(p, "task_a", task_a);
     }
-    else if(strcmp(cmd, "task_b\r") == 0){
+    else if(strcmp(cmd.command, "task_b") == 0){
         Process *p = proc_alloc();
         ktask_init(p, "task_b", task_b);
     }
-    else if(strcmp(cmd, "kill4\r") == 0){
-        Process *p = &CPU->sched.proc[4];
+    else if(strcmp(cmd.command, "kill") == 0){
+        if(cmd.args_count <= 2){
+            console_putstr(con, "invalid argument");
+            return;
+        }
+        
+        // TODO: support multiple digits
+        uint8_t kpid = cmd.args[1][0] - '0';
+        if(kpid < 0 || kpid > 9){
+            console_putstr(con, "invalid argument");
+            return;
+        }
+
+        Process *p = &CPU->sched.proc[kpid];
         ktask_kill(p);
     }
 
@@ -132,4 +149,27 @@ void console_exec(Console *con, char *cmd){
         char str[] = "[Error] command not found\r\n";
         console_putstr(con, str);
     }
+}
+
+
+bool parse_command(Command *cmd, char *line){
+    memset((char *)cmd, 0, sizeof(Command));
+    
+    cmd->args_count = 0;
+    char *p = line;
+    char *q = cmd->args[cmd->args_count];
+    while((*p != '\0') && (*p != '\r')){
+        if(*p == ' '){
+            *q = '\0';
+            cmd->args_count++;
+            q = cmd->args[cmd->args_count];
+            while(*p !=  ' ') p++;
+            continue;
+        }
+        *q = *p;
+        q++;
+        p++;
+    }
+    cmd->command = cmd->args[0];
+    return true;
 }

@@ -3,6 +3,7 @@
 SystemQueue *SYSQ;
 TIMERCTL *timerctl;
 Console *console;
+extern Cpu *CPU;
 void mainloop(void);
 void task_a(void);
 void task_b(void);
