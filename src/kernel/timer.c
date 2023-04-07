@@ -11,17 +11,6 @@ void init_pit(uint16_t c0_freq){
     io_out8(PORT_PIT_COUNTER0, c >> 8);
 }
 
-void int_handler_pit(void){
-    io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
-    tick_timer();
-
-    if(!q8_empty(SYSQ->task_timer)){
-        q8_de(SYSQ->task_timer);
-        sched_handler();
-    }
-}
-
-
 void init_timer(){
     timerctl =(TIMERCTL *) vmalloc(sizeof(TIMERCTL));
 

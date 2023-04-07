@@ -23,6 +23,7 @@ typedef enum ProcessStatus{
 typedef struct Process{
     IntrFrame *iframe;
     Context *context;
+    uint8_t *stack;
     ProcessStatus status;
     char name[PROCESS_NAME_LENGTH];
 } Process;
@@ -45,5 +46,7 @@ Process *proc_alloc(void);
 void ktask_init(Process *proc, char *name, void (*func)(void));
 void sched(void);
 void sched_handler(void);
+void ktask_exit(void);
+void ktask_kill(Process *proc);
 
 #endif

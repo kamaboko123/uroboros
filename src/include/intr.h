@@ -22,23 +22,29 @@
 #define PIC_ICW4_8086 0x01
 
 //PIC
-#define PIC_IMR_IRQ0 1 << 0
-#define PIC_IMR_IRQ1 1 << 1
-#define PIC_IMR_IRQ2 1 << 2
-#define PIC_IMR_IRQ3 1 << 3
-#define PIC_IMR_IRQ4 1 << 4
-#define PIC_IMR_IRQ5 1 << 5
-#define PIC_IMR_IRQ6 1 << 6
-#define PIC_IMR_IRQ7 1 << 7
-#define PIC_IMR_IRQ8 1 << 8
-#define PIC_IMR_IRQ9 1 << 9
-#define PIC_IMR_IR10 1 << 10
-#define PIC_IMR_IR11 1 << 11
-#define PIC_IMR_IR12 1 << 12
-#define PIC_IMR_IR13 1 << 13
-#define PIC_IMR_IR14 1 << 14
-#define PIC_IMR_IR15 1 << 15
-#define PIC_IMR_IR16 1 << 16
+#define PIC_IMR_IRQ0 (1 << 0)
+#define PIC_IMR_IRQ1 (1 << 1)
+#define PIC_IMR_IRQ2 (1 << 2)
+#define PIC_IMR_IRQ3 (1 << 3)
+#define PIC_IMR_IRQ4 (1 << 4)
+#define PIC_IMR_IRQ5 (1 << 5)
+#define PIC_IMR_IRQ6 (1 << 6)
+#define PIC_IMR_IRQ7 (1 << 7)
+#define PIC_IMR_IRQ8 (1 << 8)
+#define PIC_IMR_IRQ9 (1 << 9)
+#define PIC_IMR_IRQ10 (1 << 10)
+#define PIC_IMR_IRQ11 (1 << 11)
+#define PIC_IMR_IRQ12 (1 << 12)
+#define PIC_IMR_IRQ13 (1 << 13)
+#define PIC_IMR_IRQ14 (1 << 14)
+#define PIC_IMR_IRQ15 (1 << 15)
+#define PIC_IMR_IRQ16 (1 << 16)
+
+#define PIC_IRQ0 0
+#define PIC_IRQ1 1
+#define PIC_IRQ2 2
+#define PIC_IRQ3 3
+#define PIC_IRQ4 4
 
 // Master PICのどこにSlave PICがつながっているか
 // Master側とSlave側でフォーマットが異なる

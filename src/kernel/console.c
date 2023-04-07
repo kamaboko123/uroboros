@@ -1,5 +1,9 @@
 #include "console.h"
 
+extern void task_a();
+extern void task_b();
+extern Cpu *CPU;
+
 Console *console_init(Queue8 *q_in, Queue8 *q_out){
     Console *con = (Console *)vmalloc(sizeof(Console));
     con->line_p = con->line;
@@ -68,7 +72,7 @@ void console_exec(Console *con, char *cmd){
         console_putstr(con, str);
 
         while(p->next != NULL){
-            if((p->flags & VMEM_BLOCKS_USE) != 0){
+            if((p->flags & VMEM_BLOCKS_ALLOC) != 0){
                 sprintf(str, "[block] 0x%08x - 0x%08x (size: %d byte)\n", p->addr, p->addr + p->size -1, p->size);
                 console_putstr(con, str);
             }
@@ -84,9 +88,17 @@ void console_exec(Console *con, char *cmd){
             console_putstr(con, str);
         }
     }
-    else if(strcmp(cmd, "c\r") == 0){
-        console_putstr(con, "switch!");
-        interrupt(0x40);
+    else if(strcmp(cmd, "task_a\r") == 0){
+        Process *p = proc_alloc();
+        ktask_init(p, "task_a", task_a);
+    }
+    else if(strcmp(cmd, "task_b\r") == 0){
+        Process *p = proc_alloc();
+        ktask_init(p, "task_b", task_b);
+    }
+    else if(strcmp(cmd, "kill4\r") == 0){
+        Process *p = &CPU->sched.proc[4];
+        ktask_kill(p);
     }
 
     /*

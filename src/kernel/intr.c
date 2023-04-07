@@ -1,5 +1,7 @@
 #include "intr.h"
 
+extern SystemQueue *SYSQ;
+
 void init_pic(uint16_t imr, uint32_t intr_vec_base){
     // imr: PICに設定するマスク(master=>下位8bit, slave=>上位8bit)
     // intr_vec_base: 割り込みベクタ番号のベース
@@ -59,10 +61,20 @@ void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void)){
 }
 
 void int_handler(IntrFrame iframe){
-    if(iframe.intrnum == 0x20){
-        int_handler_pit();
+    if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ0){
+        // timer
+        io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
+        
+        tick_timer();
+        
+        //タスクスイッチ用のタイマが発火したらスケジューラを呼び出してタスクを切り変える
+        if(!q8_empty(SYSQ->task_timer)){
+            q8_de(SYSQ->task_timer);
+            sched_handler();
+        }
     }
-    else if(iframe.intrnum == 0x24){
+    else if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ4){
+        // COM1
         int_handler_serial();
     }
     else {

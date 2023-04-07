@@ -5,6 +5,7 @@ TIMERCTL *timerctl;
 Console *console;
 void mainloop(void);
 void task_a(void);
+void task_b(void);
 void task_console(void);
 
 void Main(uint8_t *kargs, ...){
@@ -55,7 +56,7 @@ void Main(uint8_t *kargs, ...){
     //システムタイマ
     init_timer();
     SYSQ->task_timer = q8_make(256, 0);
-    alloc_timer(SYSQ->task_timer, 18);
+    alloc_timer(SYSQ->task_timer, 1);
 
     //serial port
     init_serial_port();
@@ -82,6 +83,9 @@ void Main(uint8_t *kargs, ...){
     p = proc_alloc();
     ktask_init(p, "task_console", task_console);
     
+    p = proc_alloc();
+    ktask_init(p, "task_a", task_a);
+
     //Context *tmp = vmalloc(sizeof(Context));
     //BREAK();
     p = proc_alloc();
@@ -90,7 +94,36 @@ void Main(uint8_t *kargs, ...){
     CPU->proc = p;
     
     //context_switch(&tmp, p->context);
+    io_sti();
     context_switch(&p->context, CPU->sched.sched_proc->context);
+}
+
+void task_a(void){
+    /*
+    for(;;){
+        io_hlt();
+    }
+    */
+    //return;
+    for(char *c="taska!!"; *c!='\0'; c++){
+        serial_putc(*c);
+    }
+    ktask_exit();
+}
+void task_b(void){
+    /*
+    for(;;){
+        io_hlt();
+    }
+    */
+    //return;
+    for(char *c="taskb!!"; *c!='\0'; c++){
+        serial_putc(*c);
+    }
+    while(1){
+        io_hlt();
+    }
+    ktask_exit();
 }
 
 void mainloop(void){
@@ -98,7 +131,6 @@ void mainloop(void){
     char *cs = console_str;
     *cs = '\0';
     print_asc(0, 0, 7, "Welcome to UroborOS!");
-    io_sti();
     for(;;){
         io_hlt();
         init_screen(4);
@@ -135,7 +167,6 @@ void mainloop(void){
 
 
 void task_console(){
-    io_sti();
     for(;;){
         io_hlt();
         init_screen(3);
