@@ -12,10 +12,10 @@ void init_pit(uint16_t c0_freq){
 }
 
 void init_timer(){
-    timerctl =(TIMERCTL *) vmalloc(sizeof(TIMERCTL));
+    timerctl =(TIMERCTL *) kvmalloc(sizeof(TIMERCTL));
 
     // dummy
-    timerctl->t = (TIMER *)vmalloc(sizeof(TIMER));
+    timerctl->t = (TIMER *)kvmalloc(sizeof(TIMER));
     timerctl->t->next = NULL;
     timerctl->t->prev = NULL;
     timerctl->t->q = NULL;
@@ -27,7 +27,7 @@ TIMER *alloc_timer(Queue8 *q, uint32_t interval){
     TIMER *t = timerctl->t;
     
     while(t->next != NULL);
-    TIMER *new_timer = (TIMER *)vmalloc(sizeof(TIMER));
+    TIMER *new_timer = (TIMER *)kvmalloc(sizeof(TIMER));
     
     new_timer->next = NULL;
     new_timer->prev = t;

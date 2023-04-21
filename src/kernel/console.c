@@ -5,7 +5,7 @@ extern void task_b();
 extern Cpu *CPU;
 
 Console *console_init(Queue8 *q_in, Queue8 *q_out){
-    Console *con = (Console *)vmalloc(sizeof(Console));
+    Console *con = (Console *)kvmalloc(sizeof(Console));
     con->line_p = con->line;
     *con->line_p = '\0';
     con->q_in = q_in;
@@ -59,7 +59,7 @@ void console_exec(Console *con, char *line){
     Command cmd;
     parse_command(&cmd, line);
 
-    console_putstr(con, cmd.command);
+    //console_putstr(con, cmd.command);
 
     if(strcmp(cmd.command, "uname") == 0){
         char str[] = "UroborOS v0.0.1\r\n";

@@ -30,7 +30,7 @@ void Main(uint8_t *kargs, ...){
     enable_paging(KERNEL_PDT, new_stack_p + KERNEL_STACK_SIZE - 4, KERNEL_STACK_TOP_V + KERNEL_STACK_SIZE - 4);
     
     //vmalloc初期化
-    init_vmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
+    init_kvmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
     
     //GDTを正式なものにする
     init_gdt((GDT *)GDT_ADDR, (GDTR *)GDTR_ADDR);
@@ -43,7 +43,7 @@ void Main(uint8_t *kargs, ...){
     init_palette();
     init_screen(4);
     
-    SYSQ = (SystemQueue *)vmalloc(sizeof(SystemQueue));
+    SYSQ = (SystemQueue *)kvmalloc(sizeof(SystemQueue));
     
     io_cli();
     init_pic(~(PIC_IMR_IRQ0 | PIC_IMR_IRQ4), PIC_INTR_VEC_BASE);
@@ -62,7 +62,7 @@ void Main(uint8_t *kargs, ...){
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
-    SYSQ->com1_out = q8_make(4000, 0xff);
+    SYSQ->com1_out = q8_make(5000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
     //set_idt((IDT *)IDT_ADDR, 0x40, int40_handler);
@@ -78,17 +78,18 @@ void Main(uint8_t *kargs, ...){
     ktask_init(p, "sched", sched);
     CPU->sched.sched_proc = p;
     
-    p = proc_alloc();
-    ktask_init(p, "mainloop", mainloop);
+    //p = proc_alloc();
+    //ktask_init(p, "mainloop", mainloop);
    
     p = proc_alloc();
     ktask_init(p, "task_console", task_console);
     
-    p = proc_alloc();
-    ktask_init(p, "task_a", task_a);
+    //p = proc_alloc();
+    //ktask_init(p, "task_a", task_a);
 
     //Context *tmp = vmalloc(sizeof(Context));
     //BREAK();
+    
     p = proc_alloc();
     ktask_init(p, "dummy", 0);
     p->status = RUNNING;
@@ -135,10 +136,6 @@ void mainloop(void){
     for(;;){
         io_hlt();
         init_screen(4);
-        if(!q8_empty(SYSQ->task_timer)){
-            q8_de(SYSQ->task_timer);
-            serial_putc('A');
-        }
         
         /*
         char str[64];
@@ -170,7 +167,8 @@ void mainloop(void){
 void task_console(){
     for(;;){
         io_hlt();
-        init_screen(3);
+
+        init_screen(4);
         console_run(console);
         while(!q8_empty(SYSQ->com1_out)){
             char c = q8_de(console->q_out);

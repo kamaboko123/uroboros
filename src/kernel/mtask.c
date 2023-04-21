@@ -2,12 +2,12 @@
 
 Cpu *CPU;
 
-void task_idle(void){
+void task_ring3(void){
     while(true);
 }
 
 void init_mtask(void){
-    CPU = (Cpu*)vmalloc(sizeof(Cpu));
+    CPU = (Cpu*)kvmalloc(sizeof(Cpu));
     for(int i = 0; i < PROCESS_COUNT; i++){
         CPU->sched.proc[i].status = NOALLOC;
     }
@@ -43,7 +43,7 @@ void ktask_exit(){
     //タスク内でvmallocしたメモリはタスク内で片付ける
     //ユーザーランドプロセスではなく、カーネルプロセスなのでこれでOK
     CPU->proc->status = NOALLOC;
-    vfree(CPU->proc->stack);
+    kvfree(CPU->proc->stack);
     
     store_int_flag(iflag);
     context_switch(&CPU->proc->context, CPU->sched.sched_proc->context);
@@ -65,7 +65,7 @@ void ktask_kill(Process *proc){
     }
     else{
         proc->status = NOALLOC;
-        vfree(proc->stack);
+        kvfree(proc->stack);
         store_int_flag(iflag);
     }
 }
@@ -74,7 +74,7 @@ void ktask_init(Process *proc, char *name, void (*func)(void)){
     strncpy(proc->name, name, PROCESS_NAME_LENGTH);
 
     //サイズこれでいい？
-    uint8_t *task_stack = vmalloc(KTASK_STACK_SIZE);
+    uint8_t *task_stack = kvmalloc(KTASK_STACK_SIZE);
 
     //スタックポインタ計算用
     uint8_t *sp = task_stack + KTASK_STACK_SIZE;
@@ -121,8 +121,8 @@ void sched(void){
         for(int i = 0; i < PROCESS_COUNT; i++){
             //次に実行するタスクを決定する
             proc = &CPU->sched.proc[i];
-            //スケジューラ・直前に実行したタスクを避けて、RUNNABLEなプロセスを選ぶ
-            if(proc != CPU->sched.sched_proc && proc != CPU->proc && proc->status == RUNNABLE){
+            //スケジューラを避けて、RUNNABLEなプロセスを選ぶ
+            if(proc != CPU->sched.sched_proc && proc->status == RUNNABLE){
                 /*
                 for(char *c=proc->name; *c != '\0'; c++){
                     serial_putc(*c);
