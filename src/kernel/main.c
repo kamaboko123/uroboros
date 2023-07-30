@@ -85,6 +85,9 @@ void Main(uint8_t *kargs, ...){
     ktask_init(p, "task_console", task_console);
     
     //p = proc_alloc();
+    //utask_init(p, "task_user", task_ring3);
+
+    //p = proc_alloc();
     //ktask_init(p, "task_a", task_a);
 
     //Context *tmp = vmalloc(sizeof(Context));
@@ -95,9 +98,12 @@ void Main(uint8_t *kargs, ...){
     p->status = RUNNING;
     CPU->proc = p;
     
-    //context_switch(&tmp, p->context);
     io_sti();
     context_switch(&p->context, CPU->sched.sched_proc->context);
+    /*
+    for(;;){
+        serial_putc('a');
+    }*/
 }
 
 void task_a(void){

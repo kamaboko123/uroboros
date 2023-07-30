@@ -180,6 +180,7 @@ int20_handler:
 
 global int20_ret
 int20_ret:
+    xchg bx, bx
     popa
     pop gs
     pop fs
@@ -275,3 +276,7 @@ context_switch:
 
     ret
 
+
+global go_ring3
+go_ring3:
+    iret

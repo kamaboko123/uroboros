@@ -51,4 +51,5 @@ void sched_handler(void);
 void ktask_exit(void);
 void ktask_kill(Process *proc);
 
+void utask_init(Process *proc, char *name, void (*entry)(void));
 #endif
