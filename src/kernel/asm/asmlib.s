@@ -180,7 +180,7 @@ int20_handler:
 
 global int20_ret
 int20_ret:
-    xchg bx, bx
+    ;xchg bx, bx
     popa
     pop gs
     pop fs
@@ -248,7 +248,7 @@ interrupt:
 ;void magic_break(void)
 global magic_break
 magic_break:
-    xchg bx, bx
+    ;xchg bx, bx
     ret
 
 ;void context_switch(Context **old_context, Context *new_context)

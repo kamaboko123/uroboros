@@ -82,8 +82,8 @@ void map_memory_4k(PDE *pdt, uint32_t virtual_addr, uint32_t physical_addr){
     PTE *pt0 = (PTE *)(KERNEL_PT0 & PDE_PT_ADDR);
     PTE *pt = pt0 + (pde_index * 1024);
     
-    set_pde(pdt + pde_index, pt, PDE_P | PDE_RW);
-    set_pte(pt + pte_index, physical_addr, PTE_P | PTE_RW);
+    set_pde(pdt + pde_index, pt, PDE_P | PDE_RW | PDE_US);
+    set_pte(pt + pte_index, physical_addr, PTE_P | PTE_RW | PTE_US);
 }
 
 uint32_t mem_npage(uint32_t size){

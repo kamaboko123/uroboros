@@ -84,8 +84,8 @@ void Main(uint8_t *kargs, ...){
     p = proc_alloc();
     ktask_init(p, "task_console", task_console);
     
-    //p = proc_alloc();
-    //utask_init(p, "task_user", task_ring3);
+    p = proc_alloc();
+    utask_init(p, "z", task_ring3);
 
     //p = proc_alloc();
     //ktask_init(p, "task_a", task_a);

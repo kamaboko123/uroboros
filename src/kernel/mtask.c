@@ -3,8 +3,11 @@
 Cpu *CPU;
 
 void task_ring3(void){
+    BREAK();
     while(true){
-        io_cli();
+        //io_cli();
+        //serial_putc('a');
+        //BREAK();
     }
 }
 
@@ -152,6 +155,7 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     sp -= sizeof(IntrFrame);
     proc->iframe = (IntrFrame *)sp;
     //interrput frame
+    //ring3として動かしたいので、セグメントディスクリプタ指定の下2bitをセットしておく
     proc->iframe->gs = (GDT_SEGNUM_APP_DATA << 3) | 3;
     proc->iframe->fs = (GDT_SEGNUM_APP_DATA << 3) | 3;
     proc->iframe->es = (GDT_SEGNUM_APP_DATA << 3) | 3;
@@ -161,6 +165,7 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     //割り込みからの戻り先は渡された関数
     //プロセスの開始アドレスになる
     proc->iframe->eip = (uint32_t)entry;
+    //proc->iframe->cs = (GDT_SEGNUM_APP_CODE << 3) | 3;
     proc->iframe->cs = (GDT_SEGNUM_APP_CODE << 3) | 3;
     //新しいスタックの底
     proc->iframe->ebp = (uint32_t)task_stack + KTASK_STACK_SIZE;
@@ -170,6 +175,10 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     
     //まずは割り込みからの戻り処理に行く
     proc->context->eip = (uint32_t)int20_ret;
+
+    // ring3への遷移の場合にはssとespもpopされるので設定しておく必要あり
+    proc->iframe->ss = (GDT_SEGNUM_APP_DATA << 3) | 3;
+    proc->iframe->esp = proc->iframe->ebp;
 
     proc->status = RUNNABLE;
 }
@@ -191,7 +200,9 @@ void sched(void){
                 //プロセスの状態を切り替える
                 CPU->proc = proc;
                 proc->status = RUNNING;
-                BREAK();
+                if(proc->name[0] == 'z'){
+                    BREAK();
+                }
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
