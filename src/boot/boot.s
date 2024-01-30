@@ -69,6 +69,7 @@ init_gdt:
     mov si, msg_gdt_0
     call bios_putstr
     
+    xchg bx,bx
     ;GDT設定
     lgdt [GDT]
     
@@ -79,6 +80,7 @@ init_video:
     int 0x10
 
 enable_protect_mode:
+    xchg bx,bx
     ;CR0設定(プロテクトモード)
     ;ページングを使用しない(CR0の最上位bitを0, 最下位bitを1にする)
     mov eax, cr0
@@ -86,8 +88,35 @@ enable_protect_mode:
     or eax, 0x00000001
     mov cr0, eax
     
-    jmp entry_protect_mode
+    jmp dword 2*8:entry_protect_mode
 
+; functions
+bios_putstr:
+.loop:
+    mov al, [si]
+    cmp al, 0
+    je .end
+    add si, 1
+    
+    mov ah, 0x0e
+    mov bx, 15
+    int 0x10
+    jmp .loop
+.end:
+    ret
+
+error_a20:
+    mov si, msg_error_a20
+    call bios_putstr
+    jmp fin
+
+fin:
+    hlt
+    jmp fin
+
+
+
+[BITS 32]
 entry_protect_mode:
     mov ax, 1*8
     mov ds, ax
@@ -104,13 +133,6 @@ entry_protect_mode:
     
     mov esp, 0x00031000
 
-    ;GTD0のアドレスをカーネルに渡す
-    mov eax, GDT0
-    push eax
-    ;戻りアドレス、Mainから戻ることはないので何でもいい(とりあえずエントリポイントにしておく)
-    mov ebx, 0x00007c00
-    push ebp
-
     jmp dword 2*8:0x00100000
 _hlt:
     hlt
@@ -125,10 +147,7 @@ memcpy: ;esiのアドレスからediのアドレスにコピー 4byteずつecx�
     jnz memcpy ;引き算結果が0でなければmemcpyへ
     ret
 
-fin:
-    hlt
-    jmp fin
-
+; Message data
 msg_a20_0:
     DB `!BOOT! A20 Line\r\n\0`
 msg_a20_1:
@@ -143,25 +162,6 @@ msg_a20_4:
 msg_gdt_0:
     DB `!BOOT! GDT initialize...\0`
 
-error_a20:
-    mov si, msg_error_a20
-    call bios_putstr
-    jmp fin
-
-bios_putstr:
-.loop:
-    mov al, [si]
-    cmp al, 0
-    je .end
-    add si, 1
-    
-    mov ah, 0x0e
-    mov bx, 15
-    int 0x10
-    jmp .loop
-.end:
-    ret
-
 msg_error_a20:
     DB `Failed to enable A20 Line.\0`
 
@@ -169,6 +169,7 @@ msg:
     DB `!BOOT! start 2nd stage bootloader\r\n\0`
 
 
+; GDT data
 align 16
 GDT0:
     DW 0x0000, 0x0000, 0x0000, 0x0000
