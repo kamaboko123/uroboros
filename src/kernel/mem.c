@@ -1,4 +1,5 @@
 #include "mem.h"
+#include "serial.h"
 
 typedef uint32_t PTE;
 typedef uint32_t PDE;
@@ -54,16 +55,22 @@ void init_pmalloc(uint32_t start_addr){
     P_MEMMAN *memman = get_phy_memman();
     memman->base_addr = start_addr;
     for(uint32_t i = 0; i < PMALLOC_MAX_PAGE; i++){
-        memman->tbl[i] = 0;
+        memman->tbl[i].flags = 0;
+        memman->tbl[i].addr = memman->base_addr + (i * MEM_PAGE_SIZE);
+        memman->tbl[i].next = NULL;
     }
 }
 
 void *pmalloc_4k(void){
+    return (void *)pmalloc_4k_page()->addr;
+}
+
+P_MEM_PAGE *pmalloc_4k_page(void){
     P_MEMMAN *memman = get_phy_memman();
     for(uint32_t i = 0; i < PMALLOC_MAX_PAGE; i++){
-        if(memman->tbl[i] == 0){
-            memman->tbl[i] = 1;
-            return((void *)memman->base_addr + MEM_PAGE_SIZE * i);
+        if(memman->tbl[i].flags == 0){
+            memman->tbl[i].flags = 1;
+            return (memman->tbl + i);
         }
     }
     return 0;
@@ -73,7 +80,7 @@ void pfree(void *addr){
     P_MEMMAN *memman = get_phy_memman();
     uint32_t page = rounddown((uint32_t)addr, MEM_PAGE_SIZE);
     uint32_t index = (page - memman->base_addr) / MEM_PAGE_SIZE;
-    memman->tbl[index] = 0;
+    memman->tbl[index].flags = 0;
 }
 
 void map_memory_4k(PDE *pdt, uint32_t virtual_addr, uint32_t physical_addr){
@@ -107,24 +114,20 @@ void init_kvmalloc(uint32_t extent_start, uint32_t init_extent_end, uint32_t max
 }
 
 void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end){
-    
-    //領域確保
+    //管理用の領域確保
     for(int i = 0; i < mem_npage(sizeof(V_MEMMAN)); i++){
         uint32_t mem = (uint32_t)pmalloc_4k();
         map_memory_4k((PDE *)KERNEL_PDT, VMALLOC_MAN_ADDR + (i * MEM_PAGE_SIZE), mem);
     }
-    
+
     //アラインメントを揃える
-    memman->extent_start = roundup(extent_start, VMALLOC_ALIGNMENT);
-    memman->extent_end = roundup(init_extent_end, VMALLOC_ALIGNMENT);
-    memman->extent_max = roundup(max_extent_end, VMALLOC_ALIGNMENT);
-    
-    //全部マッピング
-    for(int i = 0; i < mem_npage(memman->extent_end - memman->extent_start); i++){
-        uint32_t mem = (uint32_t)pmalloc_4k();
-        map_memory_4k((PDE *)KERNEL_PDT,  memman->extent_start + (i * MEM_PAGE_SIZE), mem);
-    }
-    
+    //memman->extent_start = roundup(extent_start, VMALLOC_ALIGNMENT);
+    //memman->extent_end = roundup(init_extent_end, VMALLOC_ALIGNMENT);
+    //memman->extent_max = roundup(max_extent_end, VMALLOC_ALIGNMENT);
+    memman->extent_start = extent_start;
+    memman->extent_end = init_extent_end;
+    memman->extent_max = max_extent_end;
+
     for(int i = 0; i < VMEM_MAX_UNITS; i++){
         init_vmem_block(&memman->blocks[i]);
     }
@@ -153,11 +156,10 @@ void *kvmalloc(uint32_t size){
 
 void *vmalloc(V_MEMMAN *memman, uint32_t size){
     
-    //V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
     V_MEM_BLOCKINFO *p = memman->entry;
     
     //アラインメントを揃える
-    size = roundup(size, VMALLOC_ALIGNMENT);
+    size = roundup(size, MEM_PAGE_SIZE);
     
     while(p->next != NULL){
         //空き領域発見
@@ -178,6 +180,16 @@ void *vmalloc(V_MEMMAN *memman, uint32_t size){
                 new_block->size = p->size - size;
                 p->size = size;
                 new_block->addr = p->addr + p->size;
+
+                P_MEM_PAGE *p_mem = pmalloc_4k_page();
+                p->p_mem = p_mem;
+                map_memory_4k((PDE *)KERNEL_PDT,  p->addr, p_mem->addr);
+                for(int i = 1; i < mem_npage(size); i++){
+                    P_MEM_PAGE *new_page= pmalloc_4k_page();
+                    p_mem->next = new_page;
+                    p_mem = new_page;
+                    map_memory_4k((PDE *)KERNEL_PDT,  p->addr + (MEM_PAGE_SIZE * i), p_mem->addr);
+                }
             }
             return (void *)p->addr;
         }
@@ -195,10 +207,20 @@ void *vmalloc(V_MEMMAN *memman, uint32_t size){
             p->size = size;
             new_block->addr = p->addr + p->size;
             
+            P_MEM_PAGE *p_mem = pmalloc_4k_page();
+            p->p_mem = p_mem;
+            map_memory_4k((PDE *)KERNEL_PDT, p->addr, p_mem->addr);
+            for(int i = 1; i < mem_npage(size); i++){
+                P_MEM_PAGE *new_page= pmalloc_4k_page();
+                p_mem->next = new_page;
+                p_mem = new_page;
+                map_memory_4k((PDE *)KERNEL_PDT,  p->addr + (MEM_PAGE_SIZE * i), p_mem->addr);
+            }
             return (void *)p->addr;
         }
     }
     
+    /*
     //空き領域がないので、要求サイズの分だけエクステントを拡張する
     for(int i = 0; i < mem_npage(size - p->size); i++){
         //拡張上限なら確保失敗
@@ -209,6 +231,7 @@ void *vmalloc(V_MEMMAN *memman, uint32_t size){
         p->size += MEM_PAGE_SIZE;
         map_memory_4k((PDE *)KERNEL_PDT, p->addr + (i * MEM_PAGE_SIZE), mem);
     }
+    */
     
     return vmalloc(memman, size);
 }

@@ -13,11 +13,12 @@
 #define PROCESS_COUNT 16
 
 typedef enum ProcessStatus{
-    NOALLOC,
-    INIT,
-    RUNNABLE,
-    RUNNING,
-    EXIT
+    NOALLOC,    // 未割り当て
+    INIT,       // 割当済み
+    RUNNABLE,   // 実行可能
+    RUNNING,    // 実行中
+    NOSCHED,    // スケジューラによりスケジュールされない
+    EXIT        // 終了(破棄可能)
 } ProcessStatus;
 
 typedef struct Process{
@@ -44,6 +45,7 @@ void task_ring3(void);
 void init_mtask();
 
 
+void init_sched_proc(void);
 Process *proc_alloc(void);
 void ktask_init(Process *proc, char *name, void (*func)(void));
 void sched(void);

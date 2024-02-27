@@ -31,13 +31,11 @@ void Main(uint8_t *kargs, ...){
     
     //vmalloc初期化
     init_kvmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
-    
     //GDTを正式なものにする
     init_gdt((GDT *)GDT_ADDR, (GDTR *)GDTR_ADDR);
     
     //IDT初期化
     init_idt((IDT *)IDT_ADDR, (IDTR *)IDTR_ADDR);
-
     
     //グラフィック初期化
     init_palette();
@@ -62,6 +60,7 @@ void Main(uint8_t *kargs, ...){
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
+    //SYSQ->com1_out = q8_make(256, 0xff);
     SYSQ->com1_out = q8_make(5000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
     
@@ -74,9 +73,7 @@ void Main(uint8_t *kargs, ...){
     init_mtask();
     Process *p;
     
-    p = proc_alloc();
-    ktask_init(p, "sched", sched);
-    CPU->sched.sched_proc = p;
+    init_sched_proc();
     
     //p = proc_alloc();
     //ktask_init(p, "mainloop", mainloop);
@@ -84,34 +81,34 @@ void Main(uint8_t *kargs, ...){
     p = proc_alloc();
     ktask_init(p, "task_console", task_console);
     
-    p = proc_alloc();
-    utask_init(p, "z", task_ring3);
-
     //p = proc_alloc();
-    //ktask_init(p, "task_a", task_a);
+    //utask_init(p, "z", task_ring3);
 
-    //Context *tmp = vmalloc(sizeof(Context));
-    //BREAK();
-    
     p = proc_alloc();
-    ktask_init(p, "dummy", 0);
-    p->status = RUNNING;
-    CPU->proc = p;
+    ktask_init(p, "task_a", task_a);
+    p = proc_alloc();
+    ktask_init(p, "task_b", task_b);
+
+    // TODO: これがないとなぜか落ちる...
+    //p = proc_alloc();
+    //ktask_init(p, "dummy", task_a);
+    //p->status = INIT;
+    //CPU->proc = p;
     
-    io_sti();
-    context_switch(&p->context, CPU->sched.sched_proc->context);
-    /*
-    for(;;){
-        serial_putc('a');
-    }*/
+    BREAK();
+    // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
+    //context_switch(&p->context, CPU->sched.sched_proc->context);
+    context_switch(&CPU->sched.sched_proc->context, CPU->sched.sched_proc->context);
+    //sched();
 }
 
 void task_a(void){
-    /*
     for(;;){
-        io_hlt();
+        //serial_putc('a');
+        BREAK();
+        int a = 10;
+        a+=100;
     }
-    */
     //return;
     for(char *c="taska!!"; *c!='\0'; c++){
         serial_putc(*c);
@@ -119,11 +116,11 @@ void task_a(void){
     ktask_exit();
 }
 void task_b(void){
-    /*
     for(;;){
-        io_hlt();
+        //serial_putc('b');
+        for(int i = 0; i < 10000000; i++);
+        //serial_putc('b');
     }
-    */
     //return;
     for(char *c="taskb!!"; *c!='\0'; c++){
         serial_putc(*c);

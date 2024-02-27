@@ -19,6 +19,7 @@ void init_mtask(void){
 }
 
 Process *proc_alloc(void){
+    bool iflag = load_int_flag();
     io_cli();
     Process *proc = NULL;
     for(int i = 0; i < PROCESS_COUNT; i++){
@@ -28,7 +29,7 @@ Process *proc_alloc(void){
             break;
         }
     }
-    io_sti();
+    store_int_flag(iflag);
     return proc;
 }
 
@@ -75,6 +76,18 @@ void ktask_kill(Process *proc){
     }
 }
 
+void init_sched_proc(void){
+    Process *p;
+    p = proc_alloc();
+    ktask_init(p, "sched", sched);
+    //スケジューラ内で割り込みが入るのを避ける
+    p->iframe->eflags = 0;
+    //スケジューラはスケジューラ自身によって選択されないようにする
+    p->status = NOSCHED;
+    //CPU構造体でスケジューラのタスクを管理する
+    CPU->sched.sched_proc = p;
+}
+
 void ktask_init(Process *proc, char *name, void (*func)(void)){
     //context_switchでprocが指定された場合に、あたかもタイマ割り込み処理から復帰するかのようにメモリを設定する
     //割り込み発生時には、IntrFrameで示すようにレジスタが退避される
@@ -89,13 +102,13 @@ void ktask_init(Process *proc, char *name, void (*func)(void)){
     uint8_t *task_stack = kvmalloc(KTASK_STACK_SIZE);
 
     //スタックポインタ計算用
-    uint8_t *sp = task_stack + KTASK_STACK_SIZE;
+    uint8_t *sp = task_stack + KTASK_STACK_SIZE - 4;
     
     //確保したスタック用メモリを記録しておく(終了時に解放する)
     proc->stack = task_stack;
     
     char str[64];
-    sprintf(str, "%s (stack: 0x%08x)\n", proc->name, task_stack);
+    sprintf(str, "[k]%s (stack: 0x%08x)\n", proc->name, task_stack);
     for(char *c=str; *c!='\0'; c++){
         serial_putc(*c);
     }
@@ -145,7 +158,7 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     proc->stack = task_stack;
     
     char str[64];
-    sprintf(str, "%s (stack: 0x%08x)\n", proc->name, task_stack);
+    sprintf(str, "[u]%s (stack: 0x%08x)\n", proc->name, task_stack);
     for(char *c=str; *c!='\0'; c++){
         serial_putc(*c);
     }
@@ -176,7 +189,8 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     //まずは割り込みからの戻り処理に行く
     proc->context->eip = (uint32_t)int20_ret;
 
-    // ring3への遷移の場合にはssとespもpopされるので設定しておく必要あり
+    // ring3への遷移の場合にはssとespもpopされる
+    // ユーザランド用に確保したスタック領域を設定しておく
     proc->iframe->ss = (GDT_SEGNUM_APP_DATA << 3) | 3;
     proc->iframe->esp = proc->iframe->ebp;
 

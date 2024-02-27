@@ -65,7 +65,7 @@ void console_exec(Console *con, char *line){
         char str[] = "UroborOS v0.0.1\r\n";
         console_putstr(con, str);
     }
-    else if(strcmp(cmd.command, "vmemtable") == 0){
+    else if(strcmp(cmd.command, "vmem") == 0){
         char str[128];
         V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
         V_MEM_BLOCKINFO *p = memman->entry;
@@ -78,20 +78,24 @@ void console_exec(Console *con, char *line){
 
         while(p->next != NULL){
             if((p->flags & VMEM_BLOCKS_ALLOC) != 0){
-                sprintf(str, "[block] 0x%08x - 0x%08x (size: %d byte)\n", p->addr, p->addr + p->size -1, p->size);
+                sprintf(str, "[block] [virt: 0x%08x - 0x%08x] [phys: 0x%08x - 0x%08x] (size: %d byte, %d 4k-pages)\n", p->addr, p->addr + p->size -1, p->p_mem->addr, p->p_mem->addr - p->size - 1, p->size, mem_npage(p->size));
                 console_putstr(con, str);
             }
             p = p->next;
         }
     }
     else if(strcmp(cmd.command, "proc") == 0){
+        bool iflag = load_int_flag();
+        io_cli();
+        
         char str[128];
         for(int i = 0; i < PROCESS_COUNT; i++){
             Process *proc = &CPU->sched.proc[i];
             if(proc->status == NOALLOC) continue;
-            sprintf(str, "[%d] %s (%d)\n", i, proc->name, proc->status);
+            sprintf(str, "[%d] %s (%d) (eip: 0x%08x)\n", i, proc->name, proc->status, proc->iframe->eip);
             console_putstr(con, str);
         }
+        store_int_flag(iflag);
     }
     else if(strcmp(cmd.command, "task_a") == 0){
         Process *p = proc_alloc();

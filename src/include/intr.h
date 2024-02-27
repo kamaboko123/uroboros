@@ -82,5 +82,4 @@ void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void));
 
 void int_handler(IntrFrame iframe);
 
-
 #endif
