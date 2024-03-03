@@ -13,8 +13,8 @@
 #define IO_PORT_PIC2_DATA 0xA1
 #define IO_PORT_PIC1_OCW2 0x20
 
-//非選択EOI
-#define PIC_OCW2_CMD_EOI 0x20
+//指定EOI
+#define PIC_OCW2_CMD_EOI_BASE 0x60
 
 #define PIC_ICW1_BASE 0x10
 #define PIC_ICW1_ICW4 0x01
@@ -78,7 +78,7 @@ typedef struct IDTR{
 void init_pic(uint16_t imr, uint32_t intr_vec_base);
 void init_idt(IDT *idt0, IDTR *idtr);
 void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void));
-
+void pic_eoi(uint8_t irq);
 
 void int_handler(IntrFrame iframe);
 

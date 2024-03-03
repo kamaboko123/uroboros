@@ -60,10 +60,15 @@ void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void)){
     idt->flags = IDT_FLAG_INT_GATE | IDT_FLAG_D_32 | IDT_FLAG_DPL_0 | IDT_FLAG_P;
 }
 
+void pic_eoi(uint8_t irq){
+    // TOOD: support slave PIC
+    io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI_BASE | irq);
+}
+
 void int_handler(IntrFrame iframe){
     if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ0){
         // timer
-        io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
+        pic_eoi(PIC_IRQ0);
         
         tick_timer();
         

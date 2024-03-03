@@ -61,7 +61,7 @@ void int_handler_serial(){
     uint8_t data = read_serial();
     q8_in(SYSQ->com1_in, data);
 
-    io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI);
+    pic_eoi(PIC_IRQ4);
 }
 
 void serial_putc(char c){
