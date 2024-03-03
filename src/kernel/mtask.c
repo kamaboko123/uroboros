@@ -203,14 +203,9 @@ void sched(void){
         for(int i = 0; i < PROCESS_COUNT; i++){
             //次に実行するタスクを決定する
             proc = &CPU->sched.proc[i];
-            //スケジューラを避けて、RUNNABLEなプロセスを選ぶ
-            if(proc != CPU->sched.sched_proc && proc->status == RUNNABLE){
-                /*
-                for(char *c=proc->name; *c != '\0'; c++){
-                    serial_putc(*c);
-                }
-                serial_putc('\n');
-                */
+            //RUNNABLEなプロセスを選ぶ
+            //スケジューラ自体もプロセスだが、スケジューラはNOSCHEDという特殊な状態を持つのでここでは選ばれない
+            if(proc->status == RUNNABLE){
                 //プロセスの状態を切り替える
                 CPU->proc = proc;
                 proc->status = RUNNING;

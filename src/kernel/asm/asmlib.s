@@ -26,7 +26,6 @@ lidt:
     lidt [eax]
     ret
 
-
 global loop
 loop:
     jmp loop

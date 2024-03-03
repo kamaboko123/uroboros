@@ -60,11 +60,8 @@ void Main(uint8_t *kargs, ...){
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
-    //SYSQ->com1_out = q8_make(256, 0xff);
     SYSQ->com1_out = q8_make(5000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
-    
-    //set_idt((IDT *)IDT_ADDR, 0x40, int40_handler);
     
     //シリアルポートとコンソールを接続
     console = console_init(SYSQ->com1_in, SYSQ->com1_out);
@@ -89,17 +86,9 @@ void Main(uint8_t *kargs, ...){
     p = proc_alloc();
     ktask_init(p, "task_b", task_b);
 
-    // TODO: これがないとなぜか落ちる...
-    //p = proc_alloc();
-    //ktask_init(p, "dummy", task_a);
-    //p->status = INIT;
-    //CPU->proc = p;
-    
-    BREAK();
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
-    //context_switch(&p->context, CPU->sched.sched_proc->context);
+    // ダミータスクみたいなのを割り当てたい
     context_switch(&CPU->sched.sched_proc->context, CPU->sched.sched_proc->context);
-    //sched();
 }
 
 void task_a(void){

@@ -108,9 +108,10 @@ void pic_eoi(uint8_t irq){
 void int_handler(IntrFrame iframe){
     if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ0){
         // timer
-        pic_eoi(PIC_IRQ0);
-        
         tick_timer();
+        //先にEOIを送っておく
+        //スケジューラを呼ぶとコンテキストスイッチが起こってしまうため
+        pic_eoi(PIC_IRQ0);
         
         //タスクスイッチ用のタイマが発火したらスケジューラを呼び出してタスクを切り変える
         if(!q8_empty(SYSQ->task_timer)){
