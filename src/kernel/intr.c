@@ -61,8 +61,15 @@ void set_idt(IDT *idt0, uint8_t vec_num, void (*handler)(void)){
 }
 
 void pic_eoi(uint8_t irq){
-    // TOOD: support slave PIC
-    io_out8(IO_PORT_PIC1_OCW2, PIC_OCW2_CMD_EOI_BASE | irq);
+    if(irq >= 8){
+        // slave側、master側それぞれにEOIを送る(slaveはIRQ2に繋がっている)
+        // どちらにも同じIRQ番号を送っているケースも見られたので、CPUかチップセットでうまいことやってくれるのかもしれない
+        io_out8(IO_PORT_PIC2_COMMAND, PIC_OCW2_CMD_EOI_BASE % 7);
+        io_out8(IO_PORT_PIC1_COMMAND, PIC_OCW2_CMD_EOI_BASE + PIC_IMR_IRQ2);
+    }
+    else{
+        io_out8(IO_PORT_PIC1_COMMAND, PIC_OCW2_CMD_EOI_BASE | irq);
+    }
 }
 
 void int_handler(IntrFrame iframe){
