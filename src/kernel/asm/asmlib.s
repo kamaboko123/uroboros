@@ -280,3 +280,555 @@ context_switch:
 global go_ring3
 go_ring3:
     iret
+
+
+
+
+
+
+global int00_handler
+int00_handler:
+    push 0x00
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int01_handler
+int01_handler:
+    push 0x01
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int02_handler
+int02_handler:
+    push 0x02
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int03_handler
+int03_handler:
+    push 0x03
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int04_handler
+int04_handler:
+    push 0x04
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int05_handler
+int05_handler:
+    push 0x05
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int06_handler
+int06_handler:
+    push 0x06
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+
+global int07_handler
+int07_handler:
+    push 0x07
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int08_handler
+int08_handler:
+    push 0x08
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int09_handler
+int09_handler:
+    push 0x09
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int0a_handler
+int0a_handler:
+    push 0x0a
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int0b_handler
+int0b_handler:
+    push 0x0b
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int0c_handler
+int0c_handler:
+    push 0x0c
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int0d_handler
+int0d_handler:
+    push 0x0d
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int0e_handler
+int0e_handler:
+    push 0x0e
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int0f_handler
+int0f_handler:
+    push 0x0f
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int10_handler
+int10_handler:
+    push 0x10
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int11_handler
+int11_handler:
+    push 0x11
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int12_handler
+int12_handler:
+    push 0x12
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int13_handler
+int13_handler:
+    push 0x13
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int14_handler
+int14_handler:
+    push 0x14
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int15_handler
+int15_handler:
+    push 0x15
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int16_handler
+int16_handler:
+    push 0x16
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+
+global int17_handler
+int17_handler:
+    push 0x17
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int18_handler
+int18_handler:
+    push 0x18
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int19_handler
+int19_handler:
+    push 0x19
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int1a_handler
+int1a_handler:
+    push 0x1a
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int1b_handler
+int1b_handler:
+    push 0x1b
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int1c_handler
+int1c_handler:
+    push 0x1c
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int1d_handler
+int1d_handler:
+    push 0x1d
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int1e_handler
+int1e_handler:
+    push 0x1e
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+
+global int1f_handler
+int1f_handler:
+    push 0x1f
+    push ds
+    push es
+    push fs
+    push gs
+    pusha
+    call int_handler
+    popa
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    add esp, 4
+    iret
+

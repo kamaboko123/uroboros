@@ -60,8 +60,6 @@ uint8_t read_serial(){
 void int_handler_serial(){
     uint8_t data = read_serial();
     q8_in(SYSQ->com1_in, data);
-
-    pic_eoi(PIC_IRQ4);
 }
 
 void serial_putc(char c){
@@ -70,4 +68,10 @@ void serial_putc(char c){
     while(!serial_ready_transmit());
     io_out8(IO_PORT_COM1, c);
     store_int_flag(iflg);
+}
+
+void serial_putstr(char *str){
+    for(char *s=str; *s != '\0'; s++){
+        serial_putc(*s);
+    }
 }

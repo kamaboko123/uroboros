@@ -42,5 +42,6 @@ bool serial_received();
 bool serial_ready_transmit();
 uint8_t read_serial();
 void serial_putc(char c);
+void serial_putstr(char *str);
 
 #endif

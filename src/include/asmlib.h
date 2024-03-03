@@ -41,4 +41,39 @@ typedef struct Context{
 } Context;
 
 void context_switch(struct Context **old_context, struct Context *new_context);
+
+
+void int00_handler(void);
+void int01_handler(void);
+void int02_handler(void);
+void int03_handler(void);
+void int04_handler(void);
+void int05_handler(void);
+void int06_handler(void);
+void int07_handler(void);
+void int08_handler(void);
+void int09_handler(void);
+void int0a_handler(void);
+void int0b_handler(void);
+void int0c_handler(void);
+void int0d_handler(void);
+void int0e_handler(void);
+void int0f_handler(void);
+void int10_handler(void);
+void int11_handler(void);
+void int12_handler(void);
+void int13_handler(void);
+void int14_handler(void);
+void int15_handler(void);
+void int16_handler(void);
+void int17_handler(void);
+void int18_handler(void);
+void int19_handler(void);
+void int1a_handler(void);
+void int1b_handler(void);
+void int1c_handler(void);
+void int1d_handler(void);
+void int1e_handler(void);
+void int1f_handler(void);
+
 #endif

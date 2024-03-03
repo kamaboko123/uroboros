@@ -47,6 +47,39 @@ void init_idt(IDT *idt0, IDTR *idtr){
     idtr->size = 256 * sizeof(IDT);
     idtr->base = (uint32_t)idt0;
 
+    set_idt(idt0, 0x00, int00_handler);
+    set_idt(idt0, 0x01, int01_handler);
+    set_idt(idt0, 0x02, int02_handler);
+    set_idt(idt0, 0x03, int03_handler);
+    set_idt(idt0, 0x04, int04_handler);
+    set_idt(idt0, 0x05, int05_handler);
+    set_idt(idt0, 0x06, int06_handler);
+    set_idt(idt0, 0x07, int07_handler);
+    set_idt(idt0, 0x08, int08_handler);
+    set_idt(idt0, 0x09, int09_handler);
+    set_idt(idt0, 0x0a, int0a_handler);
+    set_idt(idt0, 0x0b, int0b_handler);
+    set_idt(idt0, 0x0c, int0c_handler);
+    set_idt(idt0, 0x0d, int0d_handler);
+    set_idt(idt0, 0x0e, int0e_handler);
+    set_idt(idt0, 0x0f, int0f_handler);
+    set_idt(idt0, 0x10, int10_handler);
+    set_idt(idt0, 0x11, int11_handler);
+    set_idt(idt0, 0x12, int12_handler);
+    set_idt(idt0, 0x13, int13_handler);
+    set_idt(idt0, 0x14, int14_handler);
+    set_idt(idt0, 0x15, int15_handler);
+    set_idt(idt0, 0x16, int16_handler);
+    set_idt(idt0, 0x17, int17_handler);
+    set_idt(idt0, 0x18, int18_handler);
+    set_idt(idt0, 0x19, int19_handler);
+    set_idt(idt0, 0x1a, int1a_handler);
+    set_idt(idt0, 0x1b, int1b_handler);
+    set_idt(idt0, 0x1c, int1c_handler);
+    set_idt(idt0, 0x1d, int1d_handler);
+    set_idt(idt0, 0x1e, int1e_handler);
+    set_idt(idt0, 0x1f, int1f_handler);
+    
     //作ったGDTを読み込む
     lidt((uint32_t)idtr);
 }
@@ -88,6 +121,13 @@ void int_handler(IntrFrame iframe){
     else if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ4){
         // COM1
         int_handler_serial();
+        pic_eoi(PIC_IRQ4);
+    }
+    else if(iframe.intrnum <= 0x1f){
+        char str[64];
+        sprintf(str, "\n!! EXCEPTION INT: 0x%02x !!\n", iframe.intrnum);
+        serial_putstr(str);
+        for(;;) io_hlt();
     }
     else {
         int_handler_null();
