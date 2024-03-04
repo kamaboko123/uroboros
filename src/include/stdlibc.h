@@ -31,7 +31,7 @@ uint32_t rand();
 uint32_t roundup(uint32_t x, uint32_t n);
 uint32_t rounddown(uint32_t x, uint32_t n);
 
-
+char *strcpy(char *s1, char *s2);
 char *strncpy(char *s1, char *s2, int n);
 
 #endif

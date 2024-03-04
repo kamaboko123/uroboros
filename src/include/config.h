@@ -65,7 +65,9 @@
 #define GDT_SEGNUM_KERNEL_CODE 2
 #define GDT_SEGNUM_APP_DATA 3
 #define GDT_SEGNUM_APP_CODE 4
-#define GDT_COUNT 5
+#define GDT_SEG_COUNT 5
+
+#define GDT_SEGNUM_TSS0     GDT_SEG_COUNT //TSS descripterはGDTの後ろに置く
 
 
 //intr

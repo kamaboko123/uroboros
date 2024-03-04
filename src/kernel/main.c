@@ -32,11 +32,15 @@ void Main(uint8_t *kargs, ...){
     //vmalloc初期化
     init_kvmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
     //GDTを正式なものにする
-    init_gdt((GDT *)GDT_ADDR, (GDTR *)GDTR_ADDR);
+    init_gdt((GDT_SEG_DESC *)GDT_ADDR, (GDTR *)GDTR_ADDR);
     
     //IDT初期化
     init_idt((IDT *)IDT_ADDR, (IDTR *)IDTR_ADDR);
-    
+
+    //TSS初期化
+    TSS32 *tss0 = (TSS32 *)kvmalloc(sizeof(TSS32));
+    init_tss(tss0, (GDT_SEG_DESC *)GDT_ADDR + GDT_SEGNUM_TSS0, (GDTR *)GDTR_ADDR);
+
     //グラフィック初期化
     init_palette();
     init_screen(4);
@@ -78,8 +82,8 @@ void Main(uint8_t *kargs, ...){
     p = proc_alloc();
     ktask_init(p, "task_console", task_console);
     
-    //p = proc_alloc();
-    //utask_init(p, "z", task_ring3);
+    p = proc_alloc();
+    utask_init(p, "z", task_ring3);
 
     p = proc_alloc();
     ktask_init(p, "task_a", task_a);
@@ -94,7 +98,7 @@ void Main(uint8_t *kargs, ...){
 void task_a(void){
     for(;;){
         //serial_putc('a');
-        BREAK();
+        //BREAK();
         int a = 10;
         a+=100;
     }

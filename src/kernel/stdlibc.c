@@ -322,6 +322,15 @@ uint32_t rounddown(uint32_t x, uint32_t n){
     return (x / n) * n;
 }
 
+char *strcpy(char *s1, char *s2){
+    while(*s2 != '\0'){
+        *s1 = *s2;
+        s2++;
+        s1++;
+    }
+    *s1 = '\0';
+    return(s1);
+}
 
 char *strncpy(char *s1, char *s2, int n){
     bool end = false;

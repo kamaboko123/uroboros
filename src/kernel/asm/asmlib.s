@@ -26,6 +26,13 @@ lidt:
     lidt [eax]
     ret
 
+;void ltr(uint32_t tss0)
+global ltr
+ltr:
+    mov eax, [esp + 4]
+    ltr ax
+    ret
+
 global loop
 loop:
     jmp loop

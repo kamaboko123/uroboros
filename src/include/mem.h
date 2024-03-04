@@ -105,7 +105,7 @@ void init_kernel_mem(void);
 
 
 //segment descripter
-typedef struct GDT{
+typedef struct GDT_SEG_DESC{
     uint16_t limit_low;
     uint16_t base_low;
     uint8_t base_mid;
@@ -119,7 +119,7 @@ typedef struct GDT{
     uint16_t db: 1;
     uint16_t g: 1;
     uint8_t base_high;
-} __attribute__((__packed__))GDT;
+} __attribute__((__packed__))GDT_SEG_DESC;
 
 typedef struct GDTR{
     uint16_t size;
@@ -133,10 +133,13 @@ typedef struct GDTR{
 #define GDT_TYPE_CODE_RE 1 << 1
 #define GDT_TYPE_DATA_RW 1 << 1
 
-void init_gdt(GDT *gdt, GDTR *gdtr);
+// system segment
+#define GDT_TYPE_TSS32 9
+
+void init_gdt(GDT_SEG_DESC *gdt, GDTR *gdtr);
 
 
-typedef struct TSS{
+typedef struct TSS32{
     uint16_t link;
     uint16_t reserved0;
     
@@ -181,7 +184,8 @@ typedef struct TSS{
     uint16_t reserved10;
     uint16_t iopb;
     uint32_t ssp;
-} __attribute__((__packed__)) TSS;
+} __attribute__((__packed__)) TSS32;
 
+void init_tss(TSS32 *tss0, GDT_SEG_DESC *tss0_desc, GDTR *gdtr);
 
 #endif

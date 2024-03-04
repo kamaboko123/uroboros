@@ -333,7 +333,7 @@ void init_kernel_mem(void){
     map_memory_4k((PDE *)KERNEL_PDT, GDT_IDT_HEAD_ADDR, GDT_IDT_HEAD_ADDR);
 }
 
-void init_gdt(GDT *gdt, GDTR *gdtr){
+void init_gdt(GDT_SEG_DESC *gdt, GDTR *gdtr){
     //null descripter
     gdt[GDT_SEGNUM_NULL].limit_low = 0;
     gdt[GDT_SEGNUM_NULL].limit_high = 0;
@@ -390,7 +390,7 @@ void init_gdt(GDT *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_APP_DATA].db = 1;
     gdt[GDT_SEGNUM_APP_DATA].g = 1;
 
-    //kernel code segment
+    //user code segment
     gdt[GDT_SEGNUM_APP_CODE].limit_low = 0xffff;
     gdt[GDT_SEGNUM_APP_CODE].limit_high = 0xf;
     gdt[GDT_SEGNUM_APP_CODE].base_low = 0;
@@ -403,11 +403,37 @@ void init_gdt(GDT *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_APP_CODE].avl = 0;
     gdt[GDT_SEGNUM_APP_CODE].db = 1;
     gdt[GDT_SEGNUM_APP_CODE].g = 1;
-    
+
     //GDTR
-    gdtr->size = GDT_COUNT * sizeof(GDT);
+    gdtr->size = GDT_SEG_COUNT * sizeof(GDT_SEG_DESC);
     gdtr->base = (uint32_t)gdt;
 
     //作ったGDTを読み込む
     lgdt((uint32_t)gdtr);
+}
+
+void init_tss(TSS32 *tss0, GDT_SEG_DESC *tss0_desc, GDTR *gdtr){
+    tss0_desc->limit_low =  sizeof(TSS32)  & 0x0000ffff;
+    tss0_desc->limit_high = (sizeof(TSS32) & 0x000f0000) >> 16;
+    tss0_desc->base_low =  (uint32_t)tss0  & 0x0000ffff;
+    tss0_desc->base_mid =  ((uint32_t)tss0 & 0x00ff0000) >> 16;
+    tss0_desc->base_high = ((uint32_t)tss0 & 0xff000000) >> 24;
+    tss0_desc->type = GDT_TYPE_TSS32;
+    tss0_desc->s = 0;   // 0=システムセグメント
+    tss0_desc->dpl = 3;
+    tss0_desc->p = 1;
+    tss0_desc->avl = 0;
+    tss0_desc->db = 0;  //TSSの場合はビジーフラグ(このTSSが選択されていると立つ？)
+    tss0_desc->g = 0;   //0=limitはbyte単位、1=limitは4KB単位
+
+    tss0->esp0 = KERNEL_STACK_V;
+    tss0->ss0 = GDT_SEGNUM_KERNEL_DATA << 3;
+    
+    //GDTRの更新
+    gdtr->size = (GDT_SEGNUM_TSS0 + 1) * sizeof(GDT_SEG_DESC);
+    lgdt((uint32_t)gdtr);
+
+    //tss読み込み
+    //GDTのオフセットで指定
+    ltr(GDT_SEGNUM_TSS0 << 3);
 }

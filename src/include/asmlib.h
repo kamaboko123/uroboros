@@ -6,6 +6,7 @@
 
 void lgdt(uint32_t gdtr);
 void lidt(uint32_t idtr);
+void ltr(uint32_t tss0);
 void io_hlt(void);
 void io_cli(void);
 void io_sti(void);

@@ -126,7 +126,85 @@ void int_handler(IntrFrame iframe){
     }
     else if(iframe.intrnum <= 0x1f){
         char str[64];
-        sprintf(str, "\n!! EXCEPTION INT: 0x%02x !!\n", iframe.intrnum);
+
+        switch(iframe.intrnum){
+            case 0x00:
+                strcpy(str, "Division Error");
+                break;
+            case 0x01:
+                strcpy(str, "Debug");
+                break;
+            case 0x02:
+                strcpy(str, "Non-maskable Interrupt");
+                break;
+            case 0x03:
+                strcpy(str, "Breakpoint");
+                break;
+            case 0x04:
+                strcpy(str, "Overflow");
+                break;
+            case 0x05:
+                strcpy(str, "Bound Range Exceeded");
+                break;
+            case 0x06:
+                strcpy(str, "Invalid Opcode");
+                break;
+            case 0x07:
+                strcpy(str, "Device Not Available");
+                break;
+            case 0x08:
+                strcpy(str, "Double Fault");
+                break;
+            case 0x09:
+                strcpy(str, "Coprocessor Segment Overrun");
+                break;
+            case 0x0a:
+                strcpy(str, "Invalid TSS");
+                break;
+            case 0x0b:
+                strcpy(str, "Segment Not Present");
+                break;
+            case 0x0c:
+                strcpy(str, "Stack-Segment Fault");
+                break;
+            case 0x0d:
+                strcpy(str, "General Protection Fault");
+                break;
+            case 0x0e:
+                strcpy(str, "Page Fault");
+                break;
+            case 0x10:
+                strcpy(str, "x87 Floating-Point Exception");
+                break;
+            case 0x11:
+                strcpy(str, "Alignment Check");
+                break;
+            case 0x12:
+                strcpy(str, "Machine Check");
+                break;
+            case 0x13:
+                strcpy(str, "SIMD Floating-Point Exception");
+                break;
+            case 0x14:
+                strcpy(str, "Virtualization Exception");
+                break;
+            case 0x15:
+                strcpy(str, "Control Protection Exception");
+                break;
+            case 0x1c:
+                strcpy(str, "Hypervisor Injection Exception");
+                break;
+            case 0x1d:
+                strcpy(str, "VMM Communication Exception");
+                break;
+            case 0x1e:
+                strcpy(str, "Security Exception");
+                break;
+            default:
+                strcpy(str, "");
+        }
+        serial_putstr(str);
+        sprintf(str, "\n!! EXCEPTION INT: 0x%02x (eip: 0x%08x) !!\n", iframe.intrnum, iframe.eip);
         serial_putstr(str);
         for(;;) io_hlt();
     }

@@ -69,7 +69,6 @@ init_gdt:
     mov si, msg_gdt_0
     call bios_putstr
     
-    xchg bx,bx
     ;GDT設定
     lgdt [GDT]
     
@@ -80,7 +79,6 @@ init_video:
     int 0x10
 
 enable_protect_mode:
-    xchg bx,bx
     ;CR0設定(プロテクトモード)
     ;ページングを使用しない(CR0の最上位bitを0, 最下位bitを1にする)
     mov eax, cr0

@@ -245,3 +245,4 @@ void sched_handler(void){
     //スケジューラが次のタスクを決定して切り替える
     context_switch(&CPU->proc->context, CPU->sched.sched_proc->context);
 }
+
