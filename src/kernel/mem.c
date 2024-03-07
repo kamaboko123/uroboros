@@ -356,6 +356,7 @@ void init_gdt(GDT_SEG_DESC *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_KERNEL_DATA].dpl = 0;
     gdt[GDT_SEGNUM_KERNEL_DATA].p = 1;
     gdt[GDT_SEGNUM_KERNEL_DATA].avl = 0;
+    gdt[GDT_SEGNUM_KERNEL_DATA].zero = 0;
     gdt[GDT_SEGNUM_KERNEL_DATA].db = 1;
     gdt[GDT_SEGNUM_KERNEL_DATA].g = 1;
 
@@ -370,6 +371,7 @@ void init_gdt(GDT_SEG_DESC *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_KERNEL_CODE].dpl = 0;
     gdt[GDT_SEGNUM_KERNEL_CODE].p = 1;
     gdt[GDT_SEGNUM_KERNEL_CODE].avl = 0;
+    gdt[GDT_SEGNUM_KERNEL_CODE].zero = 0;
     gdt[GDT_SEGNUM_KERNEL_CODE].db = 1;
     gdt[GDT_SEGNUM_KERNEL_CODE].g = 1;
     
@@ -384,6 +386,7 @@ void init_gdt(GDT_SEG_DESC *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_APP_DATA].dpl = 3;
     gdt[GDT_SEGNUM_APP_DATA].p = 1;
     gdt[GDT_SEGNUM_APP_DATA].avl = 0;
+    gdt[GDT_SEGNUM_APP_DATA].zero = 0;
     gdt[GDT_SEGNUM_APP_DATA].db = 1;
     gdt[GDT_SEGNUM_APP_DATA].g = 1;
 
@@ -398,6 +401,7 @@ void init_gdt(GDT_SEG_DESC *gdt, GDTR *gdtr){
     gdt[GDT_SEGNUM_APP_CODE].dpl = 3;
     gdt[GDT_SEGNUM_APP_CODE].p = 1;
     gdt[GDT_SEGNUM_APP_CODE].avl = 0;
+    gdt[GDT_SEGNUM_APP_CODE].zero = 0;
     gdt[GDT_SEGNUM_APP_CODE].db = 1;
     gdt[GDT_SEGNUM_APP_CODE].g = 1;
 
