@@ -110,23 +110,20 @@ void init_vmem_block(V_MEM_BLOCKINFO *block){
 
 void init_kvmalloc(uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end){
     V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
-    init_vmalloc(memman, extent_start, init_extent_end, max_extent_end);
+    init_vmalloc(memman, extent_start, init_extent_end, max_extent_end, KERNEL_PDT);
 }
 
-void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end){
+void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end, uint32_t pdt){
     //管理用の領域確保
     for(int i = 0; i < mem_npage(sizeof(V_MEMMAN)); i++){
         uint32_t mem = (uint32_t)pmalloc_4k();
         map_memory_4k((PDE *)KERNEL_PDT, VMALLOC_MAN_ADDR + (i * MEM_PAGE_SIZE), mem);
     }
 
-    //アラインメントを揃える
-    //memman->extent_start = roundup(extent_start, VMALLOC_ALIGNMENT);
-    //memman->extent_end = roundup(init_extent_end, VMALLOC_ALIGNMENT);
-    //memman->extent_max = roundup(max_extent_end, VMALLOC_ALIGNMENT);
     memman->extent_start = extent_start;
     memman->extent_end = init_extent_end;
     memman->extent_max = max_extent_end;
+    memman->pdt = pdt;
 
     for(int i = 0; i < VMEM_MAX_UNITS; i++){
         init_vmem_block(&memman->blocks[i]);
@@ -430,7 +427,7 @@ void init_tss(TSS32 *tss0, GDT_SEG_DESC *tss0_desc, GDTR *gdtr){
     tss0->ss0 = GDT_SEGNUM_KERNEL_DATA << 3;
     
     //GDTRの更新
-    gdtr->size = (GDT_SEGNUM_TSS0 + 1) * sizeof(GDT_SEG_DESC);
+    gdtr->size += sizeof(GDT_SEG_DESC);
     lgdt((uint32_t)gdtr);
 
     //tss読み込み

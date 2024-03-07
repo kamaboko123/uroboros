@@ -106,7 +106,7 @@ void console_exec(Console *con, char *line){
         ktask_init(p, "task_b", task_b);
     }
     else if(strcmp(cmd.command, "kill") == 0){
-        if(cmd.args_count <= 2){
+        if(cmd.args_count != 1){
             console_putstr(con, "invalid argument");
             return;
         }
@@ -162,12 +162,17 @@ bool parse_command(Command *cmd, char *line){
     cmd->args_count = 0;
     char *p = line;
     char *q = cmd->args[cmd->args_count];
-    while((*p != '\0') && (*p != '\r')){
+    while((*p != '\0') && (*p != '\r') && (*p != '\n')){
+        //区切り文字を見つけたら
         if(*p == ' '){
+            // 引数を終端
             *q = '\0';
+            //引数の数を増やす
             cmd->args_count++;
+            //次の引数に入れていくようにする
             q = cmd->args[cmd->args_count];
-            while(*p !=  ' ') p++;
+            //区切り文字ではないところまでポインタを進める
+            while(*p ==  ' ') p++;
             continue;
         }
         *q = *p;

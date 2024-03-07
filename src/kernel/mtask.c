@@ -1,13 +1,14 @@
 #include "mtask.h"
 
 Cpu *CPU;
+extern SystemQueue *SYSQ;
 
 void task_ring3(void){
-    BREAK();
     while(true){
         //io_cli();
         //serial_putc('a');
         //BREAK();
+        //q8_in(SYSQ->com1_out, 'a');
     }
 }
 
@@ -60,7 +61,7 @@ void ktask_kill(Process *proc){
     bool iflag = load_int_flag();
     io_cli();
 
-    if((proc->status != RUNNING) || (proc->status != RUNNABLE)){
+    if((proc->status != RUNNING) && (proc->status != RUNNABLE)){
         store_int_flag(iflag);
         return;
     }
@@ -209,9 +210,7 @@ void sched(void){
                 //プロセスの状態を切り替える
                 CPU->proc = proc;
                 proc->status = RUNNING;
-                if(proc->name[0] == 'z'){
-                    BREAK();
-                }
+                //if(proc->name[0] == 'z') BREAK();
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
