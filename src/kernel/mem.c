@@ -424,6 +424,7 @@ void init_tss(TSS32 *tss0, GDT_SEG_DESC *tss0_desc, GDTR *gdtr){
     tss0_desc->dpl = 3;
     tss0_desc->p = 1;
     tss0_desc->avl = 0;
+    tss0_desc->zero = 0;
     tss0_desc->db = 0;  //TSSの場合はビジーフラグ(このTSSが選択されていると立つ？)
     tss0_desc->g = 0;   //0=limitはbyte単位、1=limitは4KB単位
 
