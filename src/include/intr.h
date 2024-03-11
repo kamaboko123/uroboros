@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "asmlib.h"
+#include "asm_interrupts.h"
 #include "timer.h"
 #include "serial.h"
 #include "iframe.h"

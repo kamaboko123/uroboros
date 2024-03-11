@@ -23,14 +23,19 @@ OSL_LS = scripts/boot.lds
 
 KERNEL_SRC_DIR = kernel
 KERNEL_SRC = $(wildcard $(KERNEL_SRC_DIR)/*.c)
-KERNEL_OBJ = $(addprefix $(TARGET_DIR)/, $(notdir $(KERNEL_SRC:.c=.o)))
-KERNEL_LS = scripts/kernel.lds
+KERNEL_OBJ_DIR = $(TARGET_DIR)/c
+KERNEL_OBJ = $(addprefix $(KERNEL_OBJ_DIR)/, $(notdir $(KERNEL_SRC:.c=.o)))
 
-ASMLIB = $(TARGET_DIR)/asmlib.o
-ASMLIB_SRC = kernel/asm/asmlib.s
+KERNEL_ASM_SRC_DIR = kernel/asm
+KERNEL_ASM_SRC = $(wildcard $(KERNEL_ASM_SRC_DIR)/*.s)
+KERNEL_ASM_OBJ_DIR = $(TARGET_DIR)/asm
+KERNEL_ASM_OBJ = $(addprefix $(KERNEL_ASM_OBJ_DIR)/, $(notdir $(KERNEL_ASM_SRC:.s=.o)))
 
 KERNEL = $(TARGET_DIR)/kernel.bin
 KERNEL_MEMMAP = $(TARGET_DIR)/kernel.map
+
+KERNEL_LS = scripts/kernel.lds
+
 IMG = $(TARGET_DIR)/uroboros.img
 
 KERNEL_IMG = $(TARGET_DIR)/kernel.sys
@@ -41,6 +46,7 @@ FONT = font/bin/hankaku.o
 QEMU = qemu-system-x86_64
 
 BOCHS_CONF = bochs.conf
+
 
 all : clean $(IMG)
 
@@ -57,18 +63,21 @@ $(OSL) : $(OSL_SRC) $(OSL_LDS)
 $(FONT) :
 	cd $(FONT_DIR); make
 
-$(TARGET_DIR)/%.o : $(KERNEL_SRC_DIR)/%.c
-	mkdir -p $(TARGET_DIR)
+$(KERNEL_OBJ_DIR)/%.o : $(KERNEL_SRC_DIR)/%.c
+	mkdir -p $(KERNEL_OBJ_DIR)
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $^
+	@echo $(KERNEL_ASM_OBJ)
 
-$(KERNEL) : $(KERNEL_OBJ) $(ASMLIB) $(FONT)
-	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $@ $(KERNEL_OBJ) $(ASMLIB) $(FONT) 
+$(KERNEL_ASM_OBJ_DIR)/%.o : $(KERNEL_ASM_SRC_DIR)/%.s
+	mkdir -p $(KERNEL_ASM_OBJ_DIR)
+	$(AS) $(ASFLAGS) -o $@ $^
+
+
+$(KERNEL) : $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT)
+	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $@ $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT) 
 
 $(KERNEL_IMG) : $(KERNEL) $(OSL)
 	cat $(OSL) $(KERNEL) > $@
-
-$(ASMLIB): $(ASMLIB_SRC)
-	$(AS) $(ASFLAGS) -o $@ $^
 
 $(IMG) : $(IPL) $(KERNEL_IMG)
 	mformat -f 1440 -B $(IPL) -C -i $@ ::

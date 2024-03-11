@@ -141,7 +141,7 @@ void ktask_init(Process *proc, char *name, void (*func)(void)){
     proc->context = (Context *)sp;
     
     //まずは割り込みからの戻り処理に行く
-    proc->context->eip = (uint32_t)int20_ret;
+    proc->context->eip = (uint32_t)all_interrupt_ret;
 
     proc->status = RUNNABLE;
 }
@@ -188,7 +188,7 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     proc->context = (Context *)sp;
     
     //まずは割り込みからの戻り処理に行く
-    proc->context->eip = (uint32_t)int20_ret;
+    proc->context->eip = (uint32_t)all_interrupt_ret;
 
     // ring3への遷移の場合にはssとespもpopされる
     // ユーザランド用に確保したスタック領域を設定しておく

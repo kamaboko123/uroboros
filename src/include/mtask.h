@@ -5,6 +5,7 @@
 #include "stdbool.h"
 #include "mem.h"
 #include "asmlib.h"
+#include "asm_interrupts.h"
 #include "serial.h"
 #include "timer.h"
 #include "iframe.h"

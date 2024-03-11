@@ -28,7 +28,7 @@ typedef struct IntrFrame{
     //pushed by hardware when interrupt
     //these data are used for return from interrupt handler
 
-    //uint32_t error; //一部の割り込み時にはerror codeがpushされるが、今はint20を前提にしておりint20ではerror codeはないので不要
+    uint32_t error; //一部の割り込み時にはerror codeがpushされる
     uint32_t eip; // return address is used by iret
     uint16_t cs;  // return code segment is used by iret
     uint16_t padding5;
