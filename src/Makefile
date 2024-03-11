@@ -74,7 +74,8 @@ $(KERNEL_ASM_OBJ_DIR)/%.o : $(KERNEL_ASM_SRC_DIR)/%.s
 
 
 $(KERNEL) : $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT)
-	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $@ $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT) 
+	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $(TARGET_DIR)/kernel.elf $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT) 
+	objcopy -O binary $(TARGET_DIR)/kernel.elf $@
 
 $(KERNEL_IMG) : $(KERNEL) $(OSL)
 	cat $(OSL) $(KERNEL) > $@
