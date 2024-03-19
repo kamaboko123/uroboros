@@ -7,6 +7,7 @@ extern Cpu *CPU;
 void mainloop(void);
 void task_a(void);
 void task_b(void);
+void task_timer(void);
 void task_console(void);
 
 void Main(uint8_t *kargs, ...){
@@ -59,14 +60,19 @@ void Main(uint8_t *kargs, ...){
     //システムタイマ
     init_timer();
     SYSQ->task_timer = q8_make(256, 0);
-    alloc_timer(SYSQ->task_timer, 1);
+    alloc_timer(SYSQ->task_timer, 1, TIMER_MODE_ONESHOT);
 
     //serial port
     init_serial_port();
     SYSQ->com1_in = q8_make(256, 0xff);
     SYSQ->com1_out = q8_make(5000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
+
+    //app timer test
+    SYSQ->app1 = q8_make(256, 0);
+    SYSQ->t = (uint32_t)alloc_timer(SYSQ->app1, 10, TIMER_MODE_ONESHOT);
     
+
     //シリアルポートとコンソールを接続
     console = console_init(SYSQ->com1_in, SYSQ->com1_out);
     
@@ -89,6 +95,8 @@ void Main(uint8_t *kargs, ...){
     ktask_init(p, "task_a", task_a);
     p = proc_alloc();
     ktask_init(p, "task_b", task_b);
+    p = proc_alloc();
+    ktask_init(p, "task_timer", task_timer);
 
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
     // ダミータスクみたいなのを割り当てたい
@@ -96,25 +104,14 @@ void Main(uint8_t *kargs, ...){
 }
 
 void task_a(void){
-    for(;;){
-        //serial_putc('a');
-        //BREAK();
-        int a = 10;
-        a+=100;
-    }
     //return;
     for(char *c="taska!!"; *c!='\0'; c++){
         serial_putc(*c);
     }
+    for(;;);
     ktask_exit();
 }
 void task_b(void){
-    for(;;){
-        //serial_putc('b');
-        for(int i = 0; i < 10000000; i++);
-        //serial_putc('b');
-    }
-    //return;
     for(char *c="taskb!!"; *c!='\0'; c++){
         serial_putc(*c);
     }
@@ -122,6 +119,24 @@ void task_b(void){
         io_hlt();
     }
     ktask_exit();
+}
+
+void task_timer(void){
+    int i;
+    for(;;){
+        if(!q8_empty(SYSQ->app1)){
+            serial_putc('a');
+            for(int j = 0; j < 10000000; j++){
+                for(int k = 0; k < 10; k++);
+            }
+            q8_de(SYSQ->app1);
+            i++;
+            if(i == 3){
+                free_timer((TIMER *)SYSQ->t);
+                i = 0;
+            }
+        }
+    }
 }
 
 void mainloop(void){

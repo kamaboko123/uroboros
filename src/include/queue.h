@@ -21,6 +21,9 @@ typedef struct SystemQueue{
     Queue8 *com1_out;
     //タスクスイッチ用タイマ
     Queue8 *task_timer;
+    //application test
+    Queue8 *app1;
+    uint32_t t;
 } SystemQueue;
 
 Queue8 *q8_make(uint32_t size, uint8_t default_value);

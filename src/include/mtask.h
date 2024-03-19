@@ -48,6 +48,7 @@ void init_mtask();
 
 void init_sched_proc(void);
 Process *proc_alloc(void);
+//void ktask_init(Process *proc, char *name, void (*func)(void));
 void ktask_init(Process *proc, char *name, void (*func)(void));
 void sched(void);
 void sched_handler(void);

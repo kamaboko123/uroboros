@@ -40,17 +40,23 @@
 #define PIT_CW_SC_COUNTER1 0x01 <<  6
 #define PIT_CW_SC_COUNTER2 0x02 <<  6
 
+// タイマの動作モード
+// CONTINUES: タイマは指定されたキューにデータが入っていても定期的にデータを入れ続けます
+// ONESHOT  : タイマは指定されたキューにデータが入っていない場合、データを入れません
+#define TIMER_MODE_CONTINUES 0
+#define TIMER_MODE_ONESHOT   1
+
 void init_pit(uint16_t c0_freq);
 void int_handler_pit(void);
 
 
-// TODO: 永続的なタイマの実装しかないので、1回だけ発火するタイマも追加する
 typedef struct TIMER{
     struct TIMER *next;
     struct TIMER *prev;
     Queue8 *q;
     uint32_t interval;
     uint32_t count;
+    uint8_t mode;
 } TIMER;
 
 typedef struct TIMERCTL{
@@ -59,7 +65,8 @@ typedef struct TIMERCTL{
 
 
 void init_timer();
-TIMER *alloc_timer(Queue8 *q, uint32_t interval);
+TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode);
 void tick_timer(void);
+void free_timer(TIMER *t);
 
 #endif

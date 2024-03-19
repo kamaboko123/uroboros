@@ -2,6 +2,8 @@
 
 extern void task_a();
 extern void task_b();
+extern SystemQueue *SYSQ;
+extern TIMERCTL *timerctl;
 extern Cpu *CPU;
 
 Console *console_init(Queue8 *q_in, Queue8 *q_out){
@@ -104,6 +106,14 @@ void console_exec(Console *con, char *line){
     else if(strcmp(cmd.command, "task_b") == 0){
         Process *p = proc_alloc();
         ktask_init(p, "task_b", task_b);
+    }
+    else if(strcmp(cmd.command, "timers") == 0){
+        for(TIMER *t = timerctl->t; t != NULL; t=t->next){
+            if(t->interval == 0) continue;
+            char str[128];
+            sprintf(str, "interval: %4d, count: %4d\n", t->interval, t->count);
+            console_putstr(con, str);
+        }
     }
     else if(strcmp(cmd.command, "kill") == 0){
         if(cmd.args_count != 1){

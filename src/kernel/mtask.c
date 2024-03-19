@@ -90,6 +90,8 @@ void init_sched_proc(void){
 }
 
 void ktask_init(Process *proc, char *name, void (*func)(void)){
+    // FIXME: 引数を正しく受け取れるようにする
+
     //context_switchでprocが指定された場合に、あたかもタイマ割り込み処理から復帰するかのようにメモリを設定する
     //割り込み発生時には、IntrFrameで示すようにレジスタが退避される
     //そのあとcontext_swicthが呼ばれ、コンテキストの切り替えが行われる
@@ -206,7 +208,7 @@ void sched(void){
             proc = &CPU->sched.proc[i];
             //RUNNABLEなプロセスを選ぶ
             //スケジューラ自体もプロセスだが、スケジューラはNOSCHEDという特殊な状態を持つのでここでは選ばれない
-            if(proc->status == RUNNABLE){
+            if((proc->status == RUNNABLE) && (proc != CPU->proc)){
                 //プロセスの状態を切り替える
                 CPU->proc = proc;
                 proc->status = RUNNING;
@@ -214,6 +216,7 @@ void sched(void){
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
+                //serial_putstr(proc->name);
                 context_switch(&CPU->sched.sched_proc->context, proc->context);
                 
             }
