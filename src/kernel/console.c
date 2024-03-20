@@ -1,7 +1,7 @@
 #include "console.h"
 
-extern void task_a(uint32_t argc, ...);
-extern void task_b(uint32_t argc, ...);
+extern void task_a(void);
+extern void task_b(void);
 extern SystemQueue *SYSQ;
 extern TIMERCTL *timerctl;
 extern Cpu *CPU;

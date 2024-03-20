@@ -89,11 +89,7 @@ void init_sched_proc(){
     CPU->sched.sched_proc = p;
 }
 
-void ktask_init(Process *proc, char *name, void (*func)(uint32_t argc, ...), uint32_t argc, ...){
-    // FIXME: 引数を正しく受け取れるようにする
-    my_va_list args;
-    my_va_start(args, argc);
-
+void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size, ...){
     //context_switchでprocが指定された場合に、あたかもタイマ割り込み処理から復帰するかのようにメモリを設定する
     //割り込み発生時には、IntrFrameで示すようにレジスタが退避される
     //そのあとcontext_swicthが呼ばれ、コンテキストの切り替えが行われる
@@ -107,30 +103,22 @@ void ktask_init(Process *proc, char *name, void (*func)(uint32_t argc, ...), uin
     uint8_t *task_stack = kvmalloc(KTASK_STACK_SIZE);
 
     //スタックポインタ計算用
-    uint32_t sp = (uint32_t)task_stack + KTASK_STACK_SIZE- 4;
+    uint32_t sp = (uint32_t)task_stack + KTASK_STACK_SIZE;
     
     //確保したスタック用メモリを記録しておく(終了時に解放する)
     proc->stack = task_stack;
-    
-    /*
-    char str[64];
-    sprintf(str, "[k]%s (stack: 0x%08x)\n", proc->name, task_stack);
-    serial_putstr(str);
-    */
-    
-    uint32_t *tmp = kvmalloc(sizeof(char *) * argc);
-    for(int i = 0; i < argc; i++){
-        tmp[i] = (uint32_t)my_va_arg(args, char *);
-    }
 
-    for(int i = argc - 1; i >= 0; i--){
-        sp -= 4;
-        *(uint32_t *)sp = tmp[i];
-    }
-    kvfree(tmp);
+    // 引数をタスクのスタックにコピーする
+    // 最初の引数のアドレスを取得
+    uint8_t *arg_head = (uint8_t *)(&arg_size + 1);
+    // タスクのスタックに引数をコピーする
+    // (タスク側も引数として受け取るのでスタックポインタも更新する)
+    memcpy((char *)sp - arg_size, (char *)arg_head, arg_size);
+    sp -= arg_size;
 
-    sp -= 4;
-    *(uint32_t *)sp = argc;
+    // これがタスクの第一引数になる
+    //sp -= 4;
+    //*(uint32_t *)sp = arg_size;
 
     sp +=4; // why?
 
@@ -217,7 +205,7 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     proc->status = RUNNABLE;
 }
 
-void sched(uint32_t argc, ...){
+void sched(void){
     Process *proc = NULL;
     while(true){
         for(int i = 0; i < PROCESS_COUNT; i++){

@@ -5,11 +5,11 @@ TIMERCTL *timerctl;
 Console *console;
 extern Cpu *CPU;
 void mainloop(void);
-void task_a(uint32_t argc, ...);
-void task_b(uint32_t argc, ...);
-void task_c(uint32_t argc, ...);
-void task_timer(void);
-void task_console(uint32_t argc, ...);
+void task_a(void);
+void task_b(void);
+void task_c(uint32_t arg_size, char *str1, char *str2);
+void task_timer(TIMER *timer);
+void task_console(void);
 
 void Main(uint8_t *kargs, ...){
     //カーネル関連の最低限のページを初期化
@@ -68,8 +68,8 @@ void Main(uint8_t *kargs, ...){
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
 
     //app timer test
-    SYSQ->app1 = q8_make(256, 0);
-    SYSQ->t = (uint32_t)alloc_timer(SYSQ->app1, 10, TIMER_MODE_ONESHOT);
+    Queue8 *q = q8_make(256, 0);
+    TIMER *timer_test = alloc_timer(q, 10, TIMER_MODE_ONESHOT);
     
 
     //シリアルポートとコンソールを接続
@@ -102,16 +102,20 @@ void Main(uint8_t *kargs, ...){
     sprintf(str1, "hogehoge%d", 1);
     sprintf(str2, "hogehoge%d", 2);
     p = proc_alloc();
-    ktask_init(p, "task_c", task_c, 2, str1, str2);
-    //p = proc_alloc();
-    //ktask_init(p, "task_timer", task_timer);
+    
+    #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+    ktask_init(p, "task_c", task_c, sizeof(char *) * 2, str1, str2);
+    
+    p = proc_alloc();
+    #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+    ktask_init(p, "task_timer", task_timer, sizeof(TIMER *), timer_test);
 
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
     // ダミータスクみたいなのを割り当てたい
     context_switch(&CPU->sched.sched_proc->context, CPU->sched.sched_proc->context);
 }
 
-void task_a(uint32_t argc, ...){
+void task_a(void){
     //return;
     for(char *c="taska!!"; *c!='\0'; c++){
         serial_putc(*c);
@@ -119,7 +123,7 @@ void task_a(uint32_t argc, ...){
     for(;;);
     ktask_exit();
 }
-void task_b(uint32_t argc, ...){
+void task_b(void){
     for(char *c="taskb!!"; *c!='\0'; c++){
         serial_putc(*c);
     }
@@ -128,15 +132,15 @@ void task_b(uint32_t argc, ...){
     }
     ktask_exit();
 }
-void task_c(uint32_t argc, ...){
+void task_c(uint32_t arg_size, char *str1, char *str2){
     BREAK();
     
-    my_va_list args;
-    my_va_start(args, argc);
+    //my_va_list args;
+    //my_va_start(args, arg_size);
 
-    char *str1 = my_va_arg(args, char *);
-    char *str2 = my_va_arg(args, char *);
-    my_va_end(args);
+    //char *str1 = my_va_arg(args, char *);
+    //char *str2 = my_va_arg(args, char *);
+    //my_va_end(args);
     serial_putstr(str1);
     serial_putstr(str2);
 
@@ -144,18 +148,18 @@ void task_c(uint32_t argc, ...){
     ktask_exit();
 }
 
-void task_timer(void){
+void task_timer(TIMER *timer){
     int i;
     for(;;){
-        if(!q8_empty(SYSQ->app1)){
+        if(!q8_empty(timer->q)){
             serial_putc('a');
             for(int j = 0; j < 10000000; j++){
                 for(int k = 0; k < 10; k++);
             }
-            q8_de(SYSQ->app1);
+            q8_de(timer->q);
             i++;
             if(i == 3){
-                free_timer((TIMER *)SYSQ->t);
+                free_timer(timer);
                 i = 0;
             }
         }
@@ -198,11 +202,9 @@ void mainloop(void){
 }
 
 
-void task_console(uint32_t argc, ...){
+void task_console(void){
     for(;;){
         io_hlt();
-
-        init_screen(4);
         console_run(console);
         while(!q8_empty(SYSQ->com1_out)){
             char c = q8_de(console->q_out);
