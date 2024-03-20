@@ -63,12 +63,14 @@ void free_timer(TIMER *t){
 void tick_timer(){
     for(TIMER *t = timerctl->t; t != NULL; t = t->next){
         if(t->interval == 0) continue;
+        
+        if((t->mode == TIMER_MODE_ONESHOT) && !q8_empty(t->q)){
+            t->count = t->interval;
+            return;
+        }
+
         t->count--;
         if(t->count == 0){
-            if((t->mode == TIMER_MODE_ONESHOT) && !q8_empty(t->q)){
-                t->count = t->interval;
-                return;
-            }
             q8_in(t->q, 1);
             t->count = t->interval;
         }

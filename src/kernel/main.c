@@ -52,9 +52,7 @@ void Main(uint8_t *kargs, ...){
     init_pic(~(PIC_IMR_IRQ0 | PIC_IMR_IRQ4), PIC_INTR_VEC_BASE);
     
     //pit(タイマ)
-    //init_pit(119); //大体1ms
-    init_pit(0); //大体18Hz
-    SYSQ->timer = q8_make(256, 0);
+    init_pit(11920); //大体1ms
     set_idt((IDT *)IDT_ADDR, 0x20, int20_handler);
 
     //システムタイマ

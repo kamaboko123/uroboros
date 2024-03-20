@@ -14,8 +14,6 @@ typedef struct Queue8{
 } Queue8;
 
 typedef struct SystemQueue{
-    //タイマ割り込み
-    Queue8 *timer;
     //コンソール(Serial port)
     Queue8 *com1_in;
     Queue8 *com1_out;
