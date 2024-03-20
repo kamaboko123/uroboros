@@ -77,10 +77,10 @@ void ktask_kill(Process *proc){
     }
 }
 
-void init_sched_proc(void){
+void init_sched_proc(){
     Process *p;
     p = proc_alloc();
-    ktask_init(p, "sched", sched);
+    ktask_init(p, "sched", sched, 0);
     //スケジューラ内で割り込みが入るのを避ける
     p->iframe->eflags = 0;
     //スケジューラはスケジューラ自身によって選択されないようにする
@@ -89,8 +89,10 @@ void init_sched_proc(void){
     CPU->sched.sched_proc = p;
 }
 
-void ktask_init(Process *proc, char *name, void (*func)(void)){
+void ktask_init(Process *proc, char *name, void (*func)(uint32_t argc, ...), uint32_t argc, ...){
     // FIXME: 引数を正しく受け取れるようにする
+    my_va_list args;
+    my_va_start(args, argc);
 
     //context_switchでprocが指定された場合に、あたかもタイマ割り込み処理から復帰するかのようにメモリを設定する
     //割り込み発生時には、IntrFrameで示すようにレジスタが退避される
@@ -105,18 +107,33 @@ void ktask_init(Process *proc, char *name, void (*func)(void)){
     uint8_t *task_stack = kvmalloc(KTASK_STACK_SIZE);
 
     //スタックポインタ計算用
-    uint8_t *sp = task_stack + KTASK_STACK_SIZE - 4;
+    uint32_t sp = (uint32_t)task_stack + KTASK_STACK_SIZE- 4;
     
     //確保したスタック用メモリを記録しておく(終了時に解放する)
     proc->stack = task_stack;
     
+    /*
     char str[64];
     sprintf(str, "[k]%s (stack: 0x%08x)\n", proc->name, task_stack);
-    for(char *c=str; *c!='\0'; c++){
-        serial_putc(*c);
+    serial_putstr(str);
+    */
+    
+    uint32_t *tmp = kvmalloc(sizeof(char *) * argc);
+    for(int i = 0; i < argc; i++){
+        tmp[i] = (uint32_t)my_va_arg(args, char *);
     }
-    
-    
+
+    for(int i = argc - 1; i >= 0; i--){
+        sp -= 4;
+        *(uint32_t *)sp = tmp[i];
+    }
+    kvfree(tmp);
+
+    sp -= 4;
+    *(uint32_t *)sp = argc;
+
+    sp +=4; // why?
+
     //割り込みのフレーム設定
     sp -= sizeof(IntrFrame);
     proc->iframe = (IntrFrame *)sp;
@@ -200,7 +217,7 @@ void utask_init(Process *proc, char *name, void (*entry)(void)){
     proc->status = RUNNABLE;
 }
 
-void sched(void){
+void sched(uint32_t argc, ...){
     Process *proc = NULL;
     while(true){
         for(int i = 0; i < PROCESS_COUNT; i++){

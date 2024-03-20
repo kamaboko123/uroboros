@@ -1,7 +1,7 @@
 #include "console.h"
 
-extern void task_a();
-extern void task_b();
+extern void task_a(uint32_t argc, ...);
+extern void task_b(uint32_t argc, ...);
 extern SystemQueue *SYSQ;
 extern TIMERCTL *timerctl;
 extern Cpu *CPU;
@@ -101,11 +101,11 @@ void console_exec(Console *con, char *line){
     }
     else if(strcmp(cmd.command, "task_a") == 0){
         Process *p = proc_alloc();
-        ktask_init(p, "task_a", task_a);
+        ktask_init(p, "task_a", task_a, 0);
     }
     else if(strcmp(cmd.command, "task_b") == 0){
         Process *p = proc_alloc();
-        ktask_init(p, "task_b", task_b);
+        ktask_init(p, "task_b", task_b, 0);
     }
     else if(strcmp(cmd.command, "timers") == 0){
         for(TIMER *t = timerctl->t; t != NULL; t=t->next){

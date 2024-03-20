@@ -5,10 +5,11 @@ TIMERCTL *timerctl;
 Console *console;
 extern Cpu *CPU;
 void mainloop(void);
-void task_a(void);
-void task_b(void);
+void task_a(uint32_t argc, ...);
+void task_b(uint32_t argc, ...);
+void task_c(uint32_t argc, ...);
 void task_timer(void);
-void task_console(void);
+void task_console(uint32_t argc, ...);
 
 void Main(uint8_t *kargs, ...){
     //カーネル関連の最低限のページを初期化
@@ -84,24 +85,33 @@ void Main(uint8_t *kargs, ...){
     //ktask_init(p, "mainloop", mainloop);
    
     p = proc_alloc();
-    ktask_init(p, "task_console", task_console);
+    ktask_init(p, "task_console", task_console, 0);
     
     p = proc_alloc();
     utask_init(p, "z", task_ring3);
 
     p = proc_alloc();
-    ktask_init(p, "task_a", task_a);
+    ktask_init(p, "task_a", task_a, 0);
     p = proc_alloc();
-    ktask_init(p, "task_b", task_b);
+    ktask_init(p, "task_b", task_b, 0);
+    
+    //char str1[128];
+    //char str2[128];
+    char *str1 = (char *)kvmalloc(128);
+    char *str2 = (char *)kvmalloc(128);
+    sprintf(str1, "hogehoge%d", 1);
+    sprintf(str2, "hogehoge%d", 2);
     p = proc_alloc();
-    ktask_init(p, "task_timer", task_timer);
+    ktask_init(p, "task_c", task_c, 2, str1, str2);
+    //p = proc_alloc();
+    //ktask_init(p, "task_timer", task_timer);
 
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
     // ダミータスクみたいなのを割り当てたい
     context_switch(&CPU->sched.sched_proc->context, CPU->sched.sched_proc->context);
 }
 
-void task_a(void){
+void task_a(uint32_t argc, ...){
     //return;
     for(char *c="taska!!"; *c!='\0'; c++){
         serial_putc(*c);
@@ -109,13 +119,28 @@ void task_a(void){
     for(;;);
     ktask_exit();
 }
-void task_b(void){
+void task_b(uint32_t argc, ...){
     for(char *c="taskb!!"; *c!='\0'; c++){
         serial_putc(*c);
     }
     while(1){
         io_hlt();
     }
+    ktask_exit();
+}
+void task_c(uint32_t argc, ...){
+    BREAK();
+    
+    my_va_list args;
+    my_va_start(args, argc);
+
+    char *str1 = my_va_arg(args, char *);
+    char *str2 = my_va_arg(args, char *);
+    my_va_end(args);
+    serial_putstr(str1);
+    serial_putstr(str2);
+
+    while(1){}
     ktask_exit();
 }
 
@@ -173,7 +198,7 @@ void mainloop(void){
 }
 
 
-void task_console(){
+void task_console(uint32_t argc, ...){
     for(;;){
         io_hlt();
 

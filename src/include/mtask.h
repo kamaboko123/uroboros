@@ -46,11 +46,12 @@ void task_ring3(void);
 void init_mtask();
 
 
-void init_sched_proc(void);
+void init_sched_proc();
 Process *proc_alloc(void);
 //void ktask_init(Process *proc, char *name, void (*func)(void));
-void ktask_init(Process *proc, char *name, void (*func)(void));
-void sched(void);
+//void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t argc, ...);
+void ktask_init(Process *proc, char *name, void (*func)(uint32_t argc, ...), uint32_t argc, ...);
+void sched(uint32_t argc, ...);
 void sched_handler(void);
 void ktask_exit(void);
 void ktask_kill(Process *proc);
