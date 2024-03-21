@@ -7,7 +7,7 @@ extern Cpu *CPU;
 void mainloop(void);
 void task_a(void);
 void task_b(void);
-void task_c(uint32_t arg_size, char *str1, char *str2);
+void task_c(char *str1, char *str2);
 void task_timer(TIMER *timer);
 void task_console(void);
 
@@ -105,10 +105,12 @@ void Main(uint8_t *kargs, ...){
     
     #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
     ktask_init(p, "task_c", task_c, sizeof(char *) * 2, str1, str2);
+    #pragma GCC diagnostic warning "-Wincompatible-pointer-types"
     
     p = proc_alloc();
     #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
     ktask_init(p, "task_timer", task_timer, sizeof(TIMER *), timer_test);
+    #pragma GCC diagnostic warning "-Wincompatible-pointer-types"
 
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
     // ダミータスクみたいなのを割り当てたい
@@ -132,15 +134,9 @@ void task_b(void){
     }
     ktask_exit();
 }
-void task_c(uint32_t arg_size, char *str1, char *str2){
+void task_c(char *str1, char *str2){
     BREAK();
     
-    //my_va_list args;
-    //my_va_start(args, arg_size);
-
-    //char *str1 = my_va_arg(args, char *);
-    //char *str2 = my_va_arg(args, char *);
-    //my_va_end(args);
     serial_putstr(str1);
     serial_putstr(str2);
 
