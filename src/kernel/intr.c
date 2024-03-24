@@ -209,6 +209,9 @@ void int_handler(IntrFrame iframe){
         for(;;) io_hlt();
     }
     else {
+        // それ以外の割り込みは無視
+        char str[64];
+        sprintf(str, "!! UNKNOWN INTERRUPT: 0x%02x !!\n", iframe.intrnum);
         int_handler_null();
     }
 }

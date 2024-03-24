@@ -17,6 +17,8 @@ void init_mtask(void){
     for(int i = 0; i < PROCESS_COUNT; i++){
         CPU->sched.proc[i].status = NOALLOC;
     }
+
+    init_sched_proc();
 }
 
 Process *proc_alloc(void){
@@ -116,10 +118,6 @@ void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size
     memcpy((char *)sp - arg_size, (char *)arg_head, arg_size);
     sp -= arg_size;
 
-    // これがタスクの第一引数になる
-    //sp -= 4;
-    //*(uint32_t *)sp = arg_size;
-
     sp +=4; // why?
 
     //割り込みのフレーム設定
@@ -217,7 +215,6 @@ void sched(void){
                 //プロセスの状態を切り替える
                 CPU->proc = proc;
                 proc->status = RUNNING;
-                //if(proc->name[0] == 'z') BREAK();
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
@@ -225,27 +222,11 @@ void sched(void){
                 context_switch(&CPU->sched.sched_proc->context, proc->context);
                 
             }
-            /*
-            char str[64];
-            sprintf(str, "0x%08x\n", str);
-            for(char *c=str; *c!='\0'; c++){
-                serial_putc(*c);
-            }
-            */
         }
     }
 }
 
 void sched_handler(void){
-    /*
-    for(char *c="task switch! "; *c != '\0'; c++){
-        serial_putc(*c);
-    }
-    for(char *c=CPU->proc->name; *c != '\0'; c++){
-        serial_putc(*c);
-    }
-    serial_putc('>');
-    */
     //現在動作中のタスクの状態を変更(このあと別のタスクに切り替えるので、RUNNABLEに)
     CPU->proc->status = RUNNABLE;
     //スケジューラにコンテキストスイッチ

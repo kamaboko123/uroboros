@@ -27,7 +27,6 @@ typedef struct Process{
     Context *context;
     uint8_t *stack;
     ProcessStatus status;
-    V_MEMMAN *memman;
     char name[PROCESS_NAME_LENGTH];
 } Process;
 

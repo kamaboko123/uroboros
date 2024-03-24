@@ -79,8 +79,6 @@ void Main(uint8_t *kargs, ...){
     init_mtask();
     Process *p;
     
-    init_sched_proc();
-    
     //p = proc_alloc();
     //ktask_init(p, "mainloop", mainloop);
    
