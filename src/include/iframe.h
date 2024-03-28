@@ -38,7 +38,6 @@ typedef struct IntrFrame{
     uint32_t esp;
     uint16_t ss;
     uint16_t padding6;
-} IntrFrame;
-
+} __attribute__((packed)) IntrFrame;
 
 #endif

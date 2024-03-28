@@ -4,9 +4,10 @@
 #include "config.h"
 #include "asmlib.h"
 #include "asm_interrupts.h"
-#include "timer.h"
 #include "serial.h"
 #include "iframe.h"
+
+void tick_timer(void);
 
 #define IO_PORT_PIC1_COMMAND 0x20
 #define IO_PORT_PIC1_DATA 0x21

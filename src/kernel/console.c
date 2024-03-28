@@ -101,11 +101,11 @@ void console_exec(Console *con, char *line){
     }
     else if(strcmp(cmd.command, "task_a") == 0){
         Process *p = proc_alloc();
-        ktask_init(p, "task_a", task_a, 0);
+        ktask_init(p, "task_a", (uint32_t)task_a, 0);
     }
     else if(strcmp(cmd.command, "task_b") == 0){
         Process *p = proc_alloc();
-        ktask_init(p, "task_b", task_b, 0);
+        ktask_init(p, "task_b", (uint32_t)task_b, 0);
     }
     else if(strcmp(cmd.command, "timers") == 0){
         for(TIMER *t = timerctl->t; t != NULL; t=t->next){

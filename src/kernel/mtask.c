@@ -21,6 +21,19 @@ void init_mtask(void){
     init_sched_proc();
 }
 
+void init_sched_proc(){
+    Process *p;
+    p = proc_alloc();
+    ktask_init(p, "sched", (uint32_t)sched, 0);
+    //スケジューラ内で割り込みが入るのを避ける
+    p->iframe->eflags = 0;
+    //スケジューラはスケジューラ自身によって選択されないようにする
+    p->status = NOSCHED;
+    //CPU構造体でスケジューラのタスクを管理する
+    CPU->sched.sched_proc = p;
+}
+
+
 Process *proc_alloc(void){
     bool iflag = load_int_flag();
     io_cli();
@@ -40,13 +53,8 @@ void ktask_exit(){
     //実行中のタスクを終了させる
     
     //切り替え中にタスクスイッチしないように割り込みを無効化
-    //TODO: （cli命令が実行される前にタスクスイッチが起きる可能性は...？）
     bool iflag = load_int_flag();
     io_cli();
-    /*
-    for(char *c=CPU->proc->name; *c != '\0'; c++){
-        serial_putc(*c);
-    }*/
 
     //Processを解放、スタックで割り当てていたメモリも解放
     //タスク内でvmallocしたメモリはタスク内で片付ける
@@ -79,19 +87,10 @@ void ktask_kill(Process *proc){
     }
 }
 
-void init_sched_proc(){
-    Process *p;
-    p = proc_alloc();
-    ktask_init(p, "sched", sched, 0);
-    //スケジューラ内で割り込みが入るのを避ける
-    p->iframe->eflags = 0;
-    //スケジューラはスケジューラ自身によって選択されないようにする
-    p->status = NOSCHED;
-    //CPU構造体でスケジューラのタスクを管理する
-    CPU->sched.sched_proc = p;
-}
-
-void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size, ...){
+void ktask_init(Process *proc, char *name, uint32_t task_entry_addr, uint32_t arg_size, ...){
+    bool iflag = load_int_flag();
+    io_cli();
+    
     //context_switchでprocが指定された場合に、あたかもタイマ割り込み処理から復帰するかのようにメモリを設定する
     //割り込み発生時には、IntrFrameで示すようにレジスタが退避される
     //そのあとcontext_swicthが呼ばれ、コンテキストの切り替えが行われる
@@ -101,7 +100,7 @@ void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size
 
     strncpy(proc->name, name, PROCESS_NAME_LENGTH);
 
-    //サイズこれでいい？
+    //サイズは仮
     uint8_t *task_stack = kvmalloc(KTASK_STACK_SIZE);
 
     //スタックポインタ計算用
@@ -118,10 +117,12 @@ void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size
     memcpy((char *)sp - arg_size, (char *)arg_head, arg_size);
     sp -= arg_size;
 
-    sp +=4; // why?
+    sp -= 4;
+    *(uint32_t *)sp = 0x0000; // fake return address for task
 
     //割り込みのフレーム設定
-    sp -= sizeof(IntrFrame);
+    // ユーザーランドからの復帰ではないので、ssとespはスタック上に積まない(その分確保する領域を縮小)
+    sp -= sizeof(IntrFrame) - 8;
     proc->iframe = (IntrFrame *)sp;
     //interrput frame
     proc->iframe->gs = GDT_SEGNUM_KERNEL_DATA << 3;
@@ -132,7 +133,7 @@ void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size
     proc->iframe->eflags = 1 << 9;
     //割り込みからの戻り先は渡された関数
     //プロセスの開始アドレスになる
-    proc->iframe->eip = (uint32_t)func;
+    proc->iframe->eip = task_entry_addr;
     proc->iframe->cs = GDT_SEGNUM_KERNEL_CODE << 3;
     //新しいスタックの底
     proc->iframe->ebp = (uint32_t)task_stack + KTASK_STACK_SIZE;
@@ -149,6 +150,8 @@ void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size
     proc->context->eip = (uint32_t)all_interrupt_ret;
 
     proc->status = RUNNABLE;
+    
+    store_int_flag(iflag);
 }
 
 void utask_init(Process *proc, char *name, void (*entry)(void)){
@@ -218,7 +221,7 @@ void sched(void){
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
-                //serial_putstr(proc->name);
+                if(strcmp(CPU->proc->name, "task_timer") != 0) BREAK();
                 context_switch(&CPU->sched.sched_proc->context, proc->context);
                 
             }

@@ -3,6 +3,7 @@
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "mtask.h"
 
 void lgdt(uint32_t gdtr);
 void lidt(uint32_t idtr);
@@ -19,22 +20,6 @@ void enable_paging(uint32_t pdt_ddr, uint32_t new_stack_base_phy, uint32_t new_s
 uint32_t load_cr0(void);
 bool load_int_flag(void);
 void store_int_flag(bool int_flag);
-
-
 void int_handler_null(void);
-
-
-typedef struct Context{
-    //low address(stack top)
-    //eaxやebxはここでは保持不要
-    //context_switchが呼ばれる際に（必要であれば）スタックに保存されている
-    uint32_t edi;
-    uint32_t esi;
-    uint32_t ebx;
-    uint32_t ebp;
-    uint32_t eip;
-} Context;
-
-void context_switch(struct Context **old_context, struct Context *new_context);
 
 #endif

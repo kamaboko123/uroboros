@@ -5,7 +5,6 @@
 #include "asmlib.h"
 #include "queue.h"
 #include "intr.h"
-#include "global.h"
 
 #define IO_PORT_COM1 0x3f8
 

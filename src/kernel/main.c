@@ -4,11 +4,10 @@ SystemQueue *SYSQ;
 TIMERCTL *timerctl;
 Console *console;
 extern Cpu *CPU;
-void mainloop(void);
 void task_a(void);
 void task_b(void);
 void task_c(char *str1, char *str2);
-void task_timer(TIMER *timer);
+void test_task(char *str, int interval);
 void task_console(void);
 
 void Main(uint8_t *kargs, ...){
@@ -67,11 +66,6 @@ void Main(uint8_t *kargs, ...){
     SYSQ->com1_out = q8_make(5000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
 
-    //app timer test
-    Queue8 *q = q8_make(256, 0);
-    TIMER *timer_test = alloc_timer(q, 10, TIMER_MODE_ONESHOT);
-    
-
     //シリアルポートとコンソールを接続
     console = console_init(SYSQ->com1_in, SYSQ->com1_out);
     
@@ -83,36 +77,35 @@ void Main(uint8_t *kargs, ...){
     //ktask_init(p, "mainloop", mainloop);
    
     p = proc_alloc();
-    ktask_init(p, "task_console", task_console, 0);
+    ktask_init(p, "task_console", (uint32_t)task_console, 0);
     
     p = proc_alloc();
     utask_init(p, "z", task_ring3);
 
     p = proc_alloc();
-    ktask_init(p, "task_a", task_a, 0);
+    ktask_init(p, "task_a", (uint32_t)task_a, 0);
     p = proc_alloc();
-    ktask_init(p, "task_b", task_b, 0);
+    ktask_init(p, "task_b", (uint32_t)task_b, 0);
     
-    //char str1[128];
-    //char str2[128];
     char *str1 = (char *)kvmalloc(128);
     char *str2 = (char *)kvmalloc(128);
     sprintf(str1, "hogehoge%d", 1);
     sprintf(str2, "hogehoge%d", 2);
     p = proc_alloc();
     
-    #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-    ktask_init(p, "task_c", task_c, sizeof(char *) * 2, str1, str2);
-    #pragma GCC diagnostic warning "-Wincompatible-pointer-types"
+    ktask_init(p, "task_c", (uint32_t)task_c, sizeof(char *) * 2, str1, str2);
     
     p = proc_alloc();
-    #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-    ktask_init(p, "task_timer", task_timer, sizeof(TIMER *), timer_test);
-    #pragma GCC diagnostic warning "-Wincompatible-pointer-types"
+    ktask_init(p, "test_task1", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task1\n", 10000000);
+    
+    p = proc_alloc();
+    ktask_init(p, "test_task2", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task2\n", 15000000);
+    
+    BREAK();
 
+    print_asc(0, 0, 7, "Welcome to UroborOS!");
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
-    // ダミータスクみたいなのを割り当てたい
-    context_switch(&CPU->sched.sched_proc->context, CPU->sched.sched_proc->context);
+    start_mtask(CPU->sched.sched_proc->context);
 }
 
 void task_a(void){
@@ -132,69 +125,23 @@ void task_b(void){
     }
     ktask_exit();
 }
+
 void task_c(char *str1, char *str2){
     BREAK();
     
     serial_putstr(str1);
-    serial_putstr(str2);
+    //serial_putstr(str2);
 
-    while(1){}
+    //while(1){}
     ktask_exit();
 }
 
-void task_timer(TIMER *timer){
-    int i;
-    for(;;){
-        if(!q8_empty(timer->q)){
-            serial_putc('a');
-            for(int j = 0; j < 10000000; j++){
-                for(int k = 0; k < 10; k++);
-            }
-            q8_de(timer->q);
-            i++;
-            if(i == 3){
-                free_timer(timer);
-                i = 0;
-            }
-        }
+void test_task(char *str, int interval){
+    while(1){
+        serial_putstr(str);
+        for(int i = 0; i < interval; i++);
     }
 }
-
-void mainloop(void){
-    char console_str[64];
-    char *cs = console_str;
-    *cs = '\0';
-    print_asc(0, 0, 7, "Welcome to UroborOS!");
-    for(;;){
-        io_hlt();
-        init_screen(4);
-        
-        /*
-        char str[64];
-        sprintf(str, "task_timer count: %d\n", timerctl->t->next->count);
-        for(char *c=str; *c!='\0'; c++){
-            serial_putc(*c);
-        }*/
-        
-        
-        /*
-        //console_run(console);
-        while(!q8_empty(SYSQ->com1_out)){
-            char c = q8_de(console->q_out);
-            serial_putc(c);
-        }
-        */
-        
-        /*
-        char str[64];
-        sprintf(str, "0x%08x\n", load_int_flag());
-        for(char *c=str; *c!='\0'; c++){
-            serial_putc(*c);
-        }
-        */
-    }   
-}
-
 
 void task_console(void){
     for(;;){

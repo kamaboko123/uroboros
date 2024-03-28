@@ -2,6 +2,7 @@
 #define QUEUE_H
 
 #include "stdint.h"
+#include "stdbool.h"
 #include "mem.h"
 
 typedef struct Queue8{

@@ -2,7 +2,6 @@
 #define CONSOLE_H
 
 #include "mem.h"
-#include "global.h"
 #include "queue.h"
 #include "mtask.h"
 #include "timer.h"

@@ -1,11 +1,9 @@
 #ifndef PIT_H
 #define PIT_H
 
+#include "queue.h"
 #include "config.h"
 #include "asmlib.h"
-#include "intr.h"
-#include "queue.h"
-#include "mtask.h"
 
 //IOポートアドレス
 #define PORT_PIT_COUNTER0 0x40

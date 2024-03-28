@@ -1,13 +1,12 @@
 #ifndef MTASK_H
 #define MTASK_H
 
-//#include "graphic.h"
 #include "stdbool.h"
 #include "mem.h"
 #include "asmlib.h"
 #include "asm_interrupts.h"
+#include "asm_context_switch.h"
 #include "serial.h"
-#include "timer.h"
 #include "iframe.h"
 
 #define PROCESS_NAME_LENGTH 16
@@ -40,17 +39,13 @@ typedef struct Cpu{
     Scheduler sched;
 } Cpu;
 
-
 void task_ring3(void);
 void init_mtask();
 
 
 void init_sched_proc();
 Process *proc_alloc(void);
-//void ktask_init(Process *proc, char *name, void (*func)(void));
-//void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t argc, ...);
-//void ktask_init(Process *proc, char *name, void (*func)(uint32_t argc, ...), uint32_t argc, ...);
-void ktask_init(Process *proc, char *name, void (*func)(void), uint32_t arg_size, ...);
+void ktask_init(Process *proc, char *name, uint32_t task_entry_addr, uint32_t arg_size, ...);
 void sched(void);
 void sched_handler(void);
 void ktask_exit(void);

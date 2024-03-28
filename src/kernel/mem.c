@@ -1,5 +1,4 @@
 #include "mem.h"
-#include "serial.h"
 
 typedef uint32_t PTE;
 typedef uint32_t PDE;
