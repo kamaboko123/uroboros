@@ -4,6 +4,7 @@
 #include "config.h"
 #include "stdint.h"
 #include "asmlib.h"
+#include "global.h"
 
 void init_palette(void);
 void set_palette(int32_t start, int32_t end, uint8_t *rgb);

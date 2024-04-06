@@ -3,7 +3,6 @@
 
 #include "stdint.h"
 #include "stdbool.h"
-#include "mtask.h"
 
 void lgdt(uint32_t gdtr);
 void lidt(uint32_t idtr);

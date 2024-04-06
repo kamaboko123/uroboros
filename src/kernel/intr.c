@@ -1,7 +1,5 @@
 #include "intr.h"
 
-extern SystemQueue *SYSQ;
-
 void init_pic(uint16_t imr, uint32_t intr_vec_base){
     // imr: PICに設定するマスク(master=>下位8bit, slave=>上位8bit)
     // intr_vec_base: 割り込みベクタ番号のベース
@@ -114,8 +112,8 @@ void int_handler(IntrFrame iframe){
         pic_eoi(PIC_IRQ0);
         
         //タスクスイッチ用のタイマが発火したらスケジューラを呼び出してタスクを切り変える
-        if(!q8_empty(SYSQ->task_timer)){
-            q8_de(SYSQ->task_timer);
+        if(!q8_empty(sys->task_timer)){
+            q8_de(sys->task_timer);
             sched_handler();
         }
     }
@@ -124,6 +122,12 @@ void int_handler(IntrFrame iframe){
         int_handler_serial();
         pic_eoi(PIC_IRQ4);
     }
+    /*
+    else if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ6){
+        char str[64];
+        sprintf(str, "!! EXCEPTION: 0x%02x !!\n", iframe.intrnum);
+        serial_putstr(str);
+    }*/
     else if(iframe.intrnum <= 0x1f){
         char str[64];
 
@@ -212,6 +216,6 @@ void int_handler(IntrFrame iframe){
         // それ以外の割り込みは無視
         char str[64];
         sprintf(str, "!! UNKNOWN INTERRUPT: 0x%02x !!\n", iframe.intrnum);
-        int_handler_null();
+        serial_putstr(str);
     }
 }

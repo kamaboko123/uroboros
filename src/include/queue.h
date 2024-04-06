@@ -14,14 +14,6 @@ typedef struct Queue8{
     uint8_t default_value;
 } Queue8;
 
-typedef struct SystemQueue{
-    //コンソール(Serial port)
-    Queue8 *com1_in;
-    Queue8 *com1_out;
-    //タスクスイッチ用タイマ
-    Queue8 *task_timer;
-} SystemQueue;
-
 Queue8 *q8_make(uint32_t size, uint8_t default_value);
 void q8_init(Queue8 *q, uint8_t *buf, uint32_t buf_size, uint8_t default_value);
 void q8_in(Queue8 *q, uint8_t data);

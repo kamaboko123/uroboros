@@ -14,5 +14,7 @@
 #include "serial.h"
 #include "console.h"
 #include "mtask.h"
+#include "fdc.h"
+#include "global.h"
 
 #endif

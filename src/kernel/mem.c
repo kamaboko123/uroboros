@@ -1,8 +1,5 @@
 #include "mem.h"
 
-typedef uint32_t PTE;
-typedef uint32_t PDE;
-
 void init_pdt(PTE *pde){
     for(int i = 0; i < 1024; i++){
         *(pde + i) = 0;

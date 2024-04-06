@@ -1,7 +1,5 @@
 #include "serial.h"
 
-extern SystemQueue *SYSQ;
-
 void init_serial_port(){
     //115200を基準にしてこの数で割ったものがボーレート
     //DLABに設定する
@@ -59,7 +57,7 @@ uint8_t read_serial(){
 
 void int_handler_serial(){
     uint8_t data = read_serial();
-    q8_in(SYSQ->com1_in, data);
+    q8_in(sys->com1_in, data);
 }
 
 void serial_putc(char c){

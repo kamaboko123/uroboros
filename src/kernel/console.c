@@ -1,11 +1,5 @@
 #include "console.h"
 
-extern void task_a(void);
-extern void task_b(void);
-extern SystemQueue *SYSQ;
-extern TIMERCTL *timerctl;
-extern Cpu *CPU;
-
 Console *console_init(Queue8 *q_in, Queue8 *q_out){
     Console *con = (Console *)kvmalloc(sizeof(Console));
     con->line_p = con->line;
@@ -92,7 +86,7 @@ void console_exec(Console *con, char *line){
         
         char str[128];
         for(int i = 0; i < PROCESS_COUNT; i++){
-            Process *proc = &CPU->sched.proc[i];
+            Process *proc = &sys->cpu->sched.proc[i];
             if(proc->status == NOALLOC) continue;
             sprintf(str, "[%d] %s (%d) (eip: 0x%08x)\n", i, proc->name, proc->status, proc->iframe->eip);
             console_putstr(con, str);
@@ -108,7 +102,7 @@ void console_exec(Console *con, char *line){
         ktask_init(p, "task_b", (uint32_t)task_b, 0);
     }
     else if(strcmp(cmd.command, "timers") == 0){
-        for(TIMER *t = timerctl->t; t != NULL; t=t->next){
+        for(TIMER *t = sys->timerctl->t; t != NULL; t=t->next){
             if(t->interval == 0) continue;
             char str[128];
             sprintf(str, "interval: %4d, count: %4d\n", t->interval, t->count);
@@ -128,7 +122,7 @@ void console_exec(Console *con, char *line){
             return;
         }
 
-        Process *p = &CPU->sched.proc[kpid];
+        Process *p = &sys->cpu->sched.proc[kpid];
         ktask_kill(p);
     }
 

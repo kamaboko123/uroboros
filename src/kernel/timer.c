@@ -1,8 +1,5 @@
 #include "timer.h"
 
-extern SystemQueue *SYSQ;
-extern TIMERCTL *timerctl;
-
 void init_pit(uint16_t c0_freq){
     io_out8(PORT_PIT_CONTROL, PIT_CW_MODE2 | PIT_CW_RL_WRITE | PIT_CW_SC_COUNTER0);
     io_out8(PORT_PIT_COUNTER0, c0_freq & 0xff);
@@ -10,23 +7,23 @@ void init_pit(uint16_t c0_freq){
 }
 
 void init_timer(){
-    timerctl =(TIMERCTL *) kvmalloc(sizeof(TIMERCTL));
+    sys->timerctl =(TIMERCTL *) kvmalloc(sizeof(TIMERCTL));
 
     // dummy
-    timerctl->t = (TIMER *)kvmalloc(sizeof(TIMER));
-    timerctl->t->next = NULL;
-    timerctl->t->prev = NULL;
-    timerctl->t->q = NULL;
-    timerctl->t->interval = 0;
-    timerctl->t->count = 0;
-    timerctl->t->mode = 0;
+    sys->timerctl->t = (TIMER *)kvmalloc(sizeof(TIMER));
+    sys->timerctl->t->next = NULL;
+    sys->timerctl->t->prev = NULL;
+    sys->timerctl->t->q = NULL;
+    sys->timerctl->t->interval = 0;
+    sys->timerctl->t->count = 0;
+    sys->timerctl->t->mode = 0;
 }
 
 TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode){
     //自動的にタイマを作動させたくない場合は、この関数を呼ぶ前にqueueになにかデータを入れておく
     bool iflag = load_int_flag();
     io_cli();
-    TIMER *t = timerctl->t;
+    TIMER *t = sys->timerctl->t;
     
     while(t->next != NULL) t = t->next;
     TIMER *new_timer = (TIMER *)kvmalloc(sizeof(TIMER));
@@ -61,7 +58,7 @@ void free_timer(TIMER *t){
 }
 
 void tick_timer(){
-    for(TIMER *t = timerctl->t; t != NULL; t = t->next){
+    for(TIMER *t = sys->timerctl->t; t != NULL; t = t->next){
         if(t->interval == 0) continue;
         
         if((t->mode == TIMER_MODE_ONESHOT) && !q8_empty(t->q)){

@@ -1,7 +1,5 @@
 #include "graphic.h"
 
-uint8_t *vram = (uint8_t *)VRAM_ADDR_V;
-
 void init_palette(void){
     static uint8_t table_rgb[16 * 3] = {
             0x00, 0x00, 0x00,
@@ -48,7 +46,7 @@ void set_palette(int32_t start, int32_t end, uint8_t *rgb){
 void init_screen(uint32_t color){
     for(int32_t y = 0; y < SCREEN_YSIZE; y++){
         for(int32_t x = 0; x < SCREEN_XSIZE; x++){
-            vram[y * SCREEN_XSIZE + x] = color;
+            sys->vram[y * SCREEN_XSIZE + x] = color;
         }
     }
 }
@@ -62,7 +60,7 @@ void print_asc(int32_t pos_x, int32_t pos_y, uint8_t color, char *s){
 
 void put_font_asc(int32_t pos_x, int32_t pos_y, uint8_t color, uint8_t *font){
     for(int32_t i = 0; i < 16; i++){
-        uint8_t *p = vram + (pos_y + i) * SCREEN_XSIZE + pos_x;
+        uint8_t *p = sys->vram + (pos_y + i) * SCREEN_XSIZE + pos_x;
         uint8_t d = font[i];
         if((d & 0x80) != 0) p[0] = color;
         if((d & 0x40) != 0) p[1] = color;

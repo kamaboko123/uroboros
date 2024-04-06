@@ -1,15 +1,5 @@
 #include "kernel.h"
 
-SystemQueue *SYSQ;
-TIMERCTL *timerctl;
-Console *console;
-extern Cpu *CPU;
-void task_a(void);
-void task_b(void);
-void task_c(char *str1, char *str2);
-void test_task(char *str, int interval);
-void task_console(void);
-
 void Main(uint8_t *kargs, ...){
     //カーネル関連の最低限のページを初期化
     //カーネルの再配置
@@ -42,14 +32,18 @@ void Main(uint8_t *kargs, ...){
     TSS32 *tss0 = (TSS32 *)kvmalloc(sizeof(TSS32));
     init_tss(tss0, (GDT_SEG_DESC *)GDT_ADDR + GDT_SEGNUM_TSS0, (GDTR *)GDTR_ADDR);
 
+    //global変数の領域を確保
+    sys = (SYSTEM *)kvmalloc(sizeof(SYSTEM));
+    
     //グラフィック初期化
+    sys->vram = (uint8_t *)VRAM_ADDR_V;
     init_palette();
     init_screen(4);
     
-    SYSQ = (SystemQueue *)kvmalloc(sizeof(SystemQueue));
-    
+    //PICの初期化
+    //これ以降PICより割り込みが入る可能性があるので、先に割り込みを無効化する
     io_cli();
-    init_pic(~(PIC_IMR_IRQ0 | PIC_IMR_IRQ4), PIC_INTR_VEC_BASE);
+    init_pic(~(PIC_IMR_IRQ0 | PIC_IMR_IRQ4 | PIC_IMR_IRQ6), PIC_INTR_VEC_BASE);
     
     //pit(タイマ)
     init_pit(11920); //大体1ms
@@ -57,17 +51,17 @@ void Main(uint8_t *kargs, ...){
 
     //システムタイマ
     init_timer();
-    SYSQ->task_timer = q8_make(256, 0);
-    alloc_timer(SYSQ->task_timer, 1, TIMER_MODE_ONESHOT);
+    sys->task_timer = q8_make(256, 0);
+    alloc_timer(sys->task_timer, 1, TIMER_MODE_ONESHOT);
 
     //serial port
     init_serial_port();
-    SYSQ->com1_in = q8_make(256, 0xff);
-    SYSQ->com1_out = q8_make(5000, 0xff);
+    sys->com1_in = q8_make(256, 0xff);
+    sys->com1_out = q8_make(5000, 0xff);
     set_idt((IDT *)IDT_ADDR, 0x24, int24_handler);
 
     //シリアルポートとコンソールを接続
-    console = console_init(SYSQ->com1_in, SYSQ->com1_out);
+    sys->console1 = console_init(sys->com1_in, sys->com1_out);
     
     //マルチタスク
     init_mtask();
@@ -87,25 +81,23 @@ void Main(uint8_t *kargs, ...){
     p = proc_alloc();
     ktask_init(p, "task_b", (uint32_t)task_b, 0);
     
-    char *str1 = (char *)kvmalloc(128);
-    char *str2 = (char *)kvmalloc(128);
-    sprintf(str1, "hogehoge%d", 1);
-    sprintf(str2, "hogehoge%d", 2);
     p = proc_alloc();
+    ktask_init(p, "task_fdc", (uint32_t)task_fdc, 0);
+    set_idt((IDT *)IDT_ADDR, 0x26, int26_handler);
     
-    ktask_init(p, "task_c", (uint32_t)task_c, sizeof(char *) * 2, str1, str2);
     
-    p = proc_alloc();
-    ktask_init(p, "test_task1", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task1\n", 10000000);
+    //p = proc_alloc();
+    //ktask_init(p, "test_task1", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task1\n", 10000000);
     
-    p = proc_alloc();
-    ktask_init(p, "test_task2", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task2\n", 15000000);
+    //p = proc_alloc();
+    //ktask_init(p, "test_task2", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task2\n", 15000000);
     
+
     BREAK();
 
     print_asc(0, 0, 7, "Welcome to UroborOS!");
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
-    start_mtask(CPU->sched.sched_proc->context);
+    start_mtask(sys->cpu->sched.sched_proc->context);
 }
 
 void task_a(void){
@@ -126,13 +118,9 @@ void task_b(void){
     ktask_exit();
 }
 
-void task_c(char *str1, char *str2){
-    BREAK();
-    
-    serial_putstr(str1);
-    //serial_putstr(str2);
-
-    //while(1){}
+void task_fdc(){
+    reset_fdc();
+    while(1){}
     ktask_exit();
 }
 
@@ -146,9 +134,9 @@ void test_task(char *str, int interval){
 void task_console(void){
     for(;;){
         io_hlt();
-        console_run(console);
-        while(!q8_empty(SYSQ->com1_out)){
-            char c = q8_de(console->q_out);
+        console_run(sys->console1);
+        while(!q8_empty(sys->com1_out)){
+            char c = q8_de(sys->console1->q_out);
             serial_putc(c);
         }
         

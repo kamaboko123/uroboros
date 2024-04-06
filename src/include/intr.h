@@ -6,6 +6,8 @@
 #include "asm_interrupts.h"
 #include "serial.h"
 #include "iframe.h"
+#include "mtask.h"
+#include "global.h"
 
 void tick_timer(void);
 
@@ -47,6 +49,8 @@ void tick_timer(void);
 #define PIC_IRQ2 2
 #define PIC_IRQ3 3
 #define PIC_IRQ4 4
+#define PIC_IRQ5 5
+#define PIC_IRQ6 6
 
 // Master PICのどこにSlave PICがつながっているか
 // Master側とSlave側でフォーマットが異なる

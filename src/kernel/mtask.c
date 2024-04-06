@@ -1,21 +1,18 @@
 #include "mtask.h"
 
-Cpu *CPU;
-extern SystemQueue *SYSQ;
-
 void task_ring3(void){
     while(true){
         //io_cli();
         //serial_putc('a');
         //BREAK();
-        //q8_in(SYSQ->com1_out, 'a');
+        //q8_in(sys->com1_out, 'a');
     }
 }
 
 void init_mtask(void){
-    CPU = (Cpu*)kvmalloc(sizeof(Cpu));
+    sys->cpu = (Cpu*)kvmalloc(sizeof(Cpu));
     for(int i = 0; i < PROCESS_COUNT; i++){
-        CPU->sched.proc[i].status = NOALLOC;
+        sys->cpu->sched.proc[i].status = NOALLOC;
     }
 
     init_sched_proc();
@@ -29,8 +26,8 @@ void init_sched_proc(){
     p->iframe->eflags = 0;
     //スケジューラはスケジューラ自身によって選択されないようにする
     p->status = NOSCHED;
-    //CPU構造体でスケジューラのタスクを管理する
-    CPU->sched.sched_proc = p;
+    //sys->cpu構造体でスケジューラのタスクを管理する
+    sys->cpu->sched.sched_proc = p;
 }
 
 
@@ -39,7 +36,7 @@ Process *proc_alloc(void){
     io_cli();
     Process *proc = NULL;
     for(int i = 0; i < PROCESS_COUNT; i++){
-        proc = &CPU->sched.proc[i];
+        proc = &sys->cpu->sched.proc[i];
         if(proc->status == NOALLOC){
             proc->status = INIT;
             break;
@@ -59,11 +56,11 @@ void ktask_exit(){
     //Processを解放、スタックで割り当てていたメモリも解放
     //タスク内でvmallocしたメモリはタスク内で片付ける
     //ユーザーランドプロセスではなく、カーネルプロセスなのでこれでOK
-    CPU->proc->status = NOALLOC;
-    kvfree(CPU->proc->stack);
+    sys->cpu->proc->status = NOALLOC;
+    kvfree(sys->cpu->proc->stack);
     
     store_int_flag(iflag);
-    context_switch(&CPU->proc->context, CPU->sched.sched_proc->context);
+    context_switch(&sys->cpu->proc->context, sys->cpu->sched.sched_proc->context);
 }
 
 void ktask_kill(Process *proc){
@@ -77,7 +74,7 @@ void ktask_kill(Process *proc){
     }
 
     //現在実行中のプロセスが指定された
-    if(proc == CPU->proc){
+    if(proc == sys->cpu->proc){
         ktask_exit();
     }
     else{
@@ -211,18 +208,18 @@ void sched(void){
     while(true){
         for(int i = 0; i < PROCESS_COUNT; i++){
             //次に実行するタスクを決定する
-            proc = &CPU->sched.proc[i];
+            proc = &sys->cpu->sched.proc[i];
             //RUNNABLEなプロセスを選ぶ
             //スケジューラ自体もプロセスだが、スケジューラはNOSCHEDという特殊な状態を持つのでここでは選ばれない
-            if((proc->status == RUNNABLE) && (proc != CPU->proc)){
+            if((proc->status == RUNNABLE) && (proc != sys->cpu->proc)){
                 //プロセスの状態を切り替える
-                CPU->proc = proc;
+                sys->cpu->proc = proc;
                 proc->status = RUNNING;
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
-                if(strcmp(CPU->proc->name, "task_timer") != 0) BREAK();
-                context_switch(&CPU->sched.sched_proc->context, proc->context);
+                if(strcmp(sys->cpu->proc->name, "task_timer") != 0) BREAK();
+                context_switch(&sys->cpu->sched.sched_proc->context, proc->context);
                 
             }
         }
@@ -231,9 +228,9 @@ void sched(void){
 
 void sched_handler(void){
     //現在動作中のタスクの状態を変更(このあと別のタスクに切り替えるので、RUNNABLEに)
-    CPU->proc->status = RUNNABLE;
+    sys->cpu->proc->status = RUNNABLE;
     //スケジューラにコンテキストスイッチ
     //スケジューラが次のタスクを決定して切り替える
-    context_switch(&CPU->proc->context, CPU->sched.sched_proc->context);
+    context_switch(&sys->cpu->proc->context, sys->cpu->sched.sched_proc->context);
 }
 

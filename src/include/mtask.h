@@ -39,7 +39,6 @@ typedef struct Cpu{
     Scheduler sched;
 } Cpu;
 
-void task_ring3(void);
 void init_mtask();
 
 

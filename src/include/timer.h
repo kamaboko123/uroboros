@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "config.h"
 #include "asmlib.h"
+#include "global.h"
 
 //IOポートアドレス
 #define PORT_PIT_COUNTER0 0x40

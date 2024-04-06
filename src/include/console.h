@@ -5,6 +5,7 @@
 #include "queue.h"
 #include "mtask.h"
 #include "timer.h"
+#include "global.h"
 
 #define CONSOLE_LINE_BUF_SIZE 256
 #define MAX_ARG_LEN 16
