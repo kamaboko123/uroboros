@@ -5,10 +5,10 @@
 #include "stdbool.h"
 
 typedef struct Queue8 Queue8;
-typedef struct TIMERCTL TIMERCTL;
+typedef struct TimerCtl TimerCtl;
 typedef struct Cpu Cpu;
 typedef struct Console Console;
-typedef struct TIMER TIMER;
+typedef struct Timer Timer;
 
 typedef struct SYSTEM{
     //コンソール(Serial port)
@@ -21,7 +21,7 @@ typedef struct SYSTEM{
     Console *console1;
 
     //タイマ管理
-    TIMERCTL *timerctl;
+    TimerCtl *timerctl;
 
     //CPU構造体(multitask)
     Cpu *cpu;

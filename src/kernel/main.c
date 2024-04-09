@@ -50,9 +50,9 @@ void Main(uint8_t *kargs, ...){
     set_idt((IDT *)IDT_ADDR, 0x20, int20_handler);
 
     //システムタイマ
-    init_timer();
+    timer_init();
     sys->task_timer = q8_make(256, 0);
-    alloc_timer(sys->task_timer, 1, TIMER_MODE_ONESHOT);
+    timer_alloc(sys->task_timer, 1, TIMER_MODE_ONESHOT);
 
     //serial port
     init_serial_port();
@@ -119,7 +119,7 @@ void task_b(void){
 }
 
 void task_fdc(){
-    FDC_RESULT result;
+    FdcResult result;
     result = init_fdc();
     char str[128];
     sprintf(str, "fdc init result: %d\n", result);
@@ -141,11 +141,6 @@ void task_console(void){
     for(;;){
         io_hlt();
         console_run(sys->console1);
-        while(!q8_empty(sys->com1_out)){
-            char c = q8_de(sys->console1->q_out);
-            serial_putc(c);
-        }
-        
     } 
 }
 

@@ -43,5 +43,6 @@ bool serial_ready_transmit();
 uint8_t read_serial();
 void serial_putc(char c);
 void serial_putstr(char *str);
+void serial_flush_buffer();
 
 #endif

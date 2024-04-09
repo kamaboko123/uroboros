@@ -6,11 +6,11 @@ void init_pit(uint16_t c0_freq){
     io_out8(PORT_PIT_COUNTER0, c0_freq >> 8);
 }
 
-void init_timer(){
-    sys->timerctl =(TIMERCTL *) kvmalloc(sizeof(TIMERCTL));
+void timer_init(){
+    sys->timerctl = (TimerCtl *) kvmalloc(sizeof(TimerCtl));
 
     // dummy
-    sys->timerctl->t = (TIMER *)kvmalloc(sizeof(TIMER));
+    sys->timerctl->t = (Timer *)kvmalloc(sizeof(Timer));
     sys->timerctl->t->next = NULL;
     sys->timerctl->t->prev = NULL;
     sys->timerctl->t->q = NULL;
@@ -19,14 +19,14 @@ void init_timer(){
     sys->timerctl->t->mode = 0;
 }
 
-TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode){
+Timer *timer_alloc(Queue8 *q, uint32_t interval, uint8_t mode){
     //自動的にタイマを作動させたくない場合は、この関数を呼ぶ前にqueueになにかデータを入れておく
     bool iflag = load_int_flag();
     io_cli();
-    TIMER *t = sys->timerctl->t;
+    Timer *t = sys->timerctl->t;
     
     while(t->next != NULL) t = t->next;
-    TIMER *new_timer = (TIMER *)kvmalloc(sizeof(TIMER));
+    Timer *new_timer = (Timer *)kvmalloc(sizeof(Timer));
     
     new_timer->next = NULL;
     new_timer->prev = t;
@@ -40,7 +40,7 @@ TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode){
     return new_timer;
 }
 
-void timer_reset(TIMER *t){
+void timer_reset(Timer *t){
     uint32_t interval = t->interval;
     t->interval = 0;
     t->count = interval;
@@ -53,15 +53,15 @@ void timer_reset(TIMER *t){
 
 void sleep(uint32_t tick){
     Queue8 *q = q8_make(10, 0);
-    TIMER *t = alloc_timer(q, tick, TIMER_MODE_ONESHOT);
+    Timer *t = timer_alloc(q, tick, TIMER_MODE_ONESHOT);
     timer_reset(t);
     while(q8_empty(q)) io_hlt();
-    free_timer(t);
+    timer_free(t);
     q8_free(q);
 }
 
 
-void free_timer(TIMER *t){
+void timer_free(Timer *t){
     bool iflag = load_int_flag();
     io_cli();
 
@@ -78,8 +78,8 @@ void free_timer(TIMER *t){
     store_int_flag(iflag);
 }
 
-void tick_timer(){
-    for(TIMER *t = sys->timerctl->t; t != NULL; t = t->next){
+void timer_tick(){
+    for(Timer *t = sys->timerctl->t; t != NULL; t = t->next){
         if(t->interval == 0) continue;
         
         if((t->mode == TIMER_MODE_ONESHOT) && !q8_empty(t->q)){

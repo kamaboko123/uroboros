@@ -41,6 +41,7 @@ void console_run(Console *con){
         }
     }
 
+    serial_flush_buffer();
     //TODO: lineを溢れたときの実装
     //キューを空にしたほうが良いかも
 }
@@ -102,12 +103,26 @@ void console_exec(Console *con, char *line){
         ktask_init(p, "task_b", (uint32_t)task_b, 0);
     }
     else if(strcmp(cmd.command, "timers") == 0){
-        for(TIMER *t = sys->timerctl->t; t != NULL; t=t->next){
+        for(Timer *t = sys->timerctl->t; t != NULL; t=t->next){
             if(t->interval == 0) continue;
             char str[128];
             sprintf(str, "interval: %4d, count: %4d\n", t->interval, t->count);
             console_putstr(con, str);
         }
+    }
+    else if(strcmp(cmd.command, "sleep") == 0){
+        if(cmd.args_count != 1){
+            console_putstr(con, "invalid argument");
+            return;
+        }
+        if(!isdigit(cmd.args[1][0])){
+            console_putstr(con, "invalid argument");
+            return;
+        }
+        console_putstr(con, "sleeping...\r\n");
+        serial_flush_buffer();
+        sleep(atoi(cmd.args[1]));
+        console_putstr(con, "wake up!\r\n");
     }
     else if(strcmp(cmd.command, "kill") == 0){
         if(cmd.args_count != 1){

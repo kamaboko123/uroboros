@@ -49,24 +49,24 @@ void init_pit(uint16_t c0_freq);
 void int_handler_pit(void);
 
 
-typedef struct TIMER{
-    struct TIMER *next;
-    struct TIMER *prev;
+typedef struct Timer{
+    struct Timer *next;
+    struct Timer *prev;
     Queue8 *q;
     uint32_t interval;
     uint32_t count;
     uint8_t mode;
-} TIMER;
+} Timer;
 
-typedef struct TIMERCTL{
-    TIMER *t;
-} TIMERCTL;
+typedef struct TimerCtl{
+    Timer *t;
+} TimerCtl;
 
 
-void init_timer();
-TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode);
-void tick_timer(void);
-void free_timer(TIMER *t);
-void timer_reset(TIMER *t);
+void timer_init();
+Timer *timer_alloc(Queue8 *q, uint32_t interval, uint8_t mode);
+void timer_tick(void);
+void timer_free(Timer *t);
+void timer_reset(Timer *t);
 
 #endif

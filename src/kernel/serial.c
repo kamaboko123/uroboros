@@ -73,3 +73,11 @@ void serial_putstr(char *str){
         serial_putc(*s);
     }
 }
+
+void serial_flush_buffer(){
+    //送信バッファをフラッシュする
+    while(!q8_empty(sys->com1_out)){
+        char c = q8_de(sys->com1_out);
+        serial_putc(c);
+    }
+}
