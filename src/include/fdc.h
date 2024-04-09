@@ -44,10 +44,10 @@
 #define FDC_ERROR_NOT_READY 0x01
 #define FDC_ERROR_RECALIBRATE 0x01
 
-typedef uint8_t FDC_RESULT;
+typedef uint8_t FdcResult;
 
 
-typedef struct FDC_ST0{
+typedef struct FdcSt0{
     uint8_t ds0:1;
     uint8_t ds1:1;
     uint8_t h:1;
@@ -56,32 +56,32 @@ typedef struct FDC_ST0{
     uint8_t se:1;
     uint8_t ic0:1;
     uint8_t ic1:1;
-} FDC_ST0;
+} FdcSt0;
 
-typedef uint8_t FDC_CMD_STATUS[7];
+typedef uint8_t FdcCmdStatus[7];
 
-typedef struct FDC_CMD_STATUS_SENSE_INTERRUPT_STATUS{
+typedef struct FdcCmdStatusSenseInterruptStatus{
     union{
         uint8_t st0_data;
-        FDC_ST0 st0;
+        FdcSt0 st0;
     };
     uint8_t pcn; //present cylinder number
-} FDC_CMD_STATUS_SENSE_INTERRUPT_STATUS;
+} FdcCmdStatusSenseInterruptStatus;
 
 // High level functions
-FDC_RESULT init_fdc(void);
+FdcResult init_fdc(void);
 void fdc_cmd_read_data();
 
 // FDC controll and general functions
 void fdc_motor_on(uint8_t drive);
 void fdc_motor_off(uint8_t drive);
 bool check_fdc_data_ready(uint8_t direction);
-void fdc_read_status(FDC_CMD_STATUS *buf);
+void fdc_read_status(FdcCmdStatus *buf);
 
 //FDC commands
-FDC_RESULT fdc_cmd_recalibrate(uint8_t drive);
-FDC_CMD_STATUS_SENSE_INTERRUPT_STATUS *fdc_cmd_sense_interrupt_status(FDC_CMD_STATUS *buf);
-FDC_RESULT fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t head_load_time, uint8_t dma);
+FdcResult fdc_cmd_recalibrate(uint8_t drive);
+FdcCmdStatusSenseInterruptStatus *fdc_cmd_sense_interrupt_status(FdcCmdStatus *buf);
+FdcResult fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t head_load_time, uint8_t dma);
 
 void init_fdc_dma(void);
 #endif

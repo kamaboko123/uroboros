@@ -8,7 +8,7 @@ void calc_chs(uint32_t lba, uint16_t *c, uint16_t *h, uint16_t *s){
 
 void init_fdc_dma(void){}
 
-FDC_RESULT init_fdc(){
+FdcResult init_fdc(){
     //割り込みフラグを戻しておく
     sys->fdc_intr = false;
 
@@ -29,7 +29,7 @@ FDC_RESULT init_fdc(){
     //SENSE_INTERRUPT_STATUSを4回送信する
     //これによりFDCの割り込みフラグ(ST1)がクリアされる
     //4回叩くのは各ドライブに対して行われるかららしい(ドライブ指定しなくて良い？自動？)
-    FDC_CMD_STATUS status_buf;
+    FdcCmdStatus status_buf;
     for(int i = 0; i < 4; i++){
         fdc_cmd_sense_interrupt_status(&status_buf);
     }
@@ -49,7 +49,7 @@ FDC_RESULT init_fdc(){
     //最初にRECALIBRATEを実施する必要がある(ヘッドをトラック0に戻す)
     //使用するドライブのモータをONにしておく必要がある
     for(int i = 0; i < 2; i++){
-        FDC_RESULT result;
+        FdcResult result;
         fdc_motor_on(i);
         result = fdc_cmd_recalibrate(i);
         if(result != FDC_OK) return result;
@@ -76,7 +76,7 @@ void fdc_cmd_read_data(){
     while(!sys->fdc_intr);
     sys->fdc_intr = false;
 
-    FDC_CMD_STATUS status_buf;
+    FdcCmdStatus status_buf;
     fdc_read_status(&status_buf);
     for(int i = 0; i < 7; i++){
         char str[64];
@@ -85,18 +85,18 @@ void fdc_cmd_read_data(){
     }
 }
 
-FDC_CMD_STATUS_SENSE_INTERRUPT_STATUS *fdc_cmd_sense_interrupt_status(FDC_CMD_STATUS *buf){
+FdcCmdStatusSenseInterruptStatus *fdc_cmd_sense_interrupt_status(FdcCmdStatus *buf){
     io_out8(IO_PORT_FDC_DATA, FDC_CMD_SENSE_INTERRUPT_STATUS);
     
     fdc_read_status(buf);
-    return (FDC_CMD_STATUS_SENSE_INTERRUPT_STATUS *)buf;
+    return (FdcCmdStatusSenseInterruptStatus *)buf;
 }
 
-FDC_RESULT fdc_cmd_recalibrate(uint8_t drive){
+FdcResult fdc_cmd_recalibrate(uint8_t drive){
     if(!check_fdc_data_ready(FDC_MSR_DIO_WRITE)) return FDC_ERROR_NOT_READY;
 
-    FDC_CMD_STATUS status_buf;
-    FDC_CMD_STATUS_SENSE_INTERRUPT_STATUS *status;
+    FdcCmdStatus status_buf;
+    FdcCmdStatusSenseInterruptStatus *status;
 
     io_out8(IO_PORT_FDC_DATA, FDC_CMD_RECALIBRATE);
     io_out8(IO_PORT_FDC_DATA, drive);
@@ -112,19 +112,19 @@ FDC_RESULT fdc_cmd_recalibrate(uint8_t drive){
     return FDC_OK;
 }
 
-FDC_RESULT fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t head_load_time, uint8_t dma){
+FdcResult fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t head_load_time, uint8_t dma){
     if(!check_fdc_data_ready(FDC_MSR_DIO_WRITE)) return FDC_ERROR_NOT_READY;
     io_out8(IO_PORT_FDC_DATA, FDC_CMD_SPECIFY);
     io_out8(IO_PORT_FDC_DATA, (step_rate << 4) | head_unload_time);
     io_out8(IO_PORT_FDC_DATA, head_load_time << 1 | dma);
     
     //cmd command doesn't return status
-    FDC_CMD_STATUS buf;
+    FdcCmdStatus buf;
     fdc_read_status(&buf);
     return FDC_OK;
 }
 
-void fdc_read_status(FDC_CMD_STATUS *buf){
+void fdc_read_status(FdcCmdStatus *buf){
     uint8_t *p = (uint8_t *)buf;
     for(int i = 0; i < 7; i++){
         *(p + i) = io_in8(IO_PORT_FDC_DATA);
