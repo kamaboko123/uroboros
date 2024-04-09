@@ -67,5 +67,6 @@ void init_timer();
 TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode);
 void tick_timer(void);
 void free_timer(TIMER *t);
+void timer_reset(TIMER *t);
 
 #endif

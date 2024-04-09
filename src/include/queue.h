@@ -21,4 +21,6 @@ uint8_t q8_de(Queue8 *q);
 uint32_t q8_usage(Queue8 *q);
 bool q8_empty(Queue8 *q);
 bool q8_full(Queue8 *q);
+void q8_free(Queue8 *q);
+void sleep(uint32_t tick);
 #endif

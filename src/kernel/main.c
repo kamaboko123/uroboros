@@ -119,7 +119,13 @@ void task_b(void){
 }
 
 void task_fdc(){
-    reset_fdc();
+    FDC_RESULT result;
+    result = init_fdc();
+    char str[128];
+    sprintf(str, "fdc init result: %d\n", result);
+    serial_putstr(str);
+
+    //init_fdc_dma();
     while(1){}
     ktask_exit();
 }

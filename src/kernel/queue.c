@@ -11,6 +11,10 @@ Queue8 *q8_make(uint32_t size, uint8_t default_value){
     return mem;
 }
 
+void q8_free(Queue8 *q){
+    kvfree(q->buf);
+}
+
 void q8_init(Queue8 *q, uint8_t *buf, uint32_t buf_size, uint8_t default_value){
     q->size = buf_size + 1;
     q->buf = buf;

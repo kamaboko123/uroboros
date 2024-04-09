@@ -40,6 +40,27 @@ TIMER *alloc_timer(Queue8 *q, uint32_t interval, uint8_t mode){
     return new_timer;
 }
 
+void timer_reset(TIMER *t){
+    uint32_t interval = t->interval;
+    t->interval = 0;
+    t->count = interval;
+
+    while(!q8_empty(t->q)){
+        q8_de(t->q);
+    }
+    t->interval = interval;
+}
+
+void sleep(uint32_t tick){
+    Queue8 *q = q8_make(10, 0);
+    TIMER *t = alloc_timer(q, tick, TIMER_MODE_ONESHOT);
+    timer_reset(t);
+    while(q8_empty(q)) io_hlt();
+    free_timer(t);
+    q8_free(q);
+}
+
+
 void free_timer(TIMER *t){
     bool iflag = load_int_flag();
     io_cli();

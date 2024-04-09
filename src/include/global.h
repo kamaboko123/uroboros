@@ -2,11 +2,13 @@
 #define GLOBAL_H
 
 #include "stdint.h"
+#include "stdbool.h"
 
 typedef struct Queue8 Queue8;
 typedef struct TIMERCTL TIMERCTL;
 typedef struct Cpu Cpu;
 typedef struct Console Console;
+typedef struct TIMER TIMER;
 
 typedef struct SYSTEM{
     //コンソール(Serial port)
@@ -23,6 +25,9 @@ typedef struct SYSTEM{
 
     //CPU構造体(multitask)
     Cpu *cpu;
+
+    //FDCの割り込みフラグ
+    bool fdc_intr;
 
     uint8_t *vram;
 } SYSTEM;
