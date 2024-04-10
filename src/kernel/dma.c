@@ -31,8 +31,8 @@ void dma_set_mode(uint8_t channel, uint8_t mode){
     }
 }
 
-void dma_set_command(uint8_t channel, uint8_t command){
-    if(channel == 2){
+void dma_set_command(uint8_t dmac, uint8_t command){
+    if(dmac == DMAC_SLAVE){
         io_out8(IO_PORT_DMA_SLAVE_COMMAND, command);
     }
     else{
@@ -63,15 +63,12 @@ void dma_clear_all_mask(){
     io_out8(IO_PORT_DMA_SLAVE_MASK_RESET, 0xFF);
 }
 
-void dma_reset_flipflop(uint8_t channel){
-    if(channel == 0){
+void dma_reset_flipflop(uint8_t dmac){
+    if(dmac == DMAC_MASTER){
         io_out8(IO_PORT_DMA_MASTER_CLEAR_BP, 0xFF);
     }
-    if(channel == 2){
+    else if(dmac == DMAC_SLAVE){
         io_out8(IO_PORT_DMA_SLAVE_CLEAR_BP, 0xFF);
-    }
-    else{
-        return;
     }
 }
 
@@ -84,27 +81,24 @@ void dma_set_page(uint8_t channel, uint8_t page){
     }
 }
 
-/*
-void dma_init_write_mode(uint8_t channel, uint16_t phy_addr, uint16_t count){
-    io_out8(0x0a, 0x06);       //mask DMA channel 2 and 0 (assuming 0 is already masked)
-    io_out8(0x0c, 0xFF);       //reset the master flip-flop
-    io_out8(0x04, 0);          //address to 0 (low byte)
-    io_out8(0x04, 0x10);       //address to 0x10 (high byte)
-    io_out8(0x0c, 0xFF);       //reset the master flip-flop (again!!!)
-    io_out8(0x05, 0xFF);       //count to 0x23ff (low byte)
-    io_out8(0x05, 0x23);       //count to 0x23ff (high byte),
-    io_out8(0x81, 0);          //external page register to 0 for total address of 00 10 00
-    io_out8(0x0a, 0x02);       //unmask DMA channel 2
-}
-*/
-void dma_init_write_mode(uint8_t channel, uint32_t phy_addr, uint16_t count){
-    //dma_set_command(channel, DMA_COMMAND_COND_ENABLE);
+void dma_init_for_fd_read(uint8_t channel, uint32_t phy_addr, uint16_t count){
+    // enable slave DMAC
+    dma_set_command(DMAC_SLAVE, DMA_COMMAND_COND_ENABLE);
+    // mask all channels
     dma_clear_all_mask();
-    dma_reset_flipflop(0);
+
+    // set address, count, page
+    // TODO: MASTERのリセット必要らしいけど本当？
+    // bochではなくても動くので、とりあえずコメントアウト
+    //dma_reset_flipflop(DMAC_MASTER);
     dma_set_address(channel, (uint16_t)phy_addr);
-    dma_reset_flipflop(0);
+    //dma_reset_flipflop(DMAC_MASTER);
     dma_set_count(channel, count);
     dma_set_page(channel, (phy_addr >> 16) & 0xFF);
+
+    // set mode(write: io -> mem)
     dma_set_mode(channel, DMA_MODE_CH2 | DMA_MODE_WRITE | DMA_MODE_SINGLE | DMA_MODE_AUTO);
+
+    //enable selected channel
     dma_unset_single_mask(channel);
 }

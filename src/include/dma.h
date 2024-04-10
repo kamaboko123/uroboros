@@ -5,6 +5,9 @@
 #include "asmlib.h"
 #include "config.h"
 
+#define DMAC_MASTER 1  // 16bit (channel 4-7)
+#define DMAC_SLAVE  0  // 8bit  (channel 0-3)
+
 #define IO_PORT_DMA_CH2_ADDR  0x04
 #define IO_PORT_DMA_CH2_COUNT 0x05
 #define IO_PORT_DMA_CH2_PAGE  0x81
@@ -39,10 +42,11 @@ void init_fdc_dma(void);
 void dma_set_address(uint8_t channel, uint16_t phy_addr);
 void dma_set_count(uint8_t channel, uint16_t count);
 void dma_set_mode(uint8_t channel, uint8_t mode);
-void dma_set_command(uint8_t channel, uint8_t command);
+void dma_set_command(uint8_t dmac, uint8_t command);
+void dma_reset_flipflop(uint8_t dmac);
 void dma_set_single_mask(uint8_t channel);
 void dma_unset_single_mask(uint8_t channel);
 void dma_clear_all_mask();
 
-void dma_init_write_mode(uint8_t channel, uint32_t phy_addr, uint16_t count);
+void dma_init_for_fd_read(uint8_t channel, uint32_t phy_addr, uint16_t count);
 #endif

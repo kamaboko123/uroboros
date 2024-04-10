@@ -61,7 +61,7 @@ FdcResult init_fdc(){
 
 //TODO: impl
 void fdc_cmd_read_data(){
-    dma_init_write_mode(FDC_DMA_CHANNEL, 0x0200, 512-1);
+    dma_init_for_fd_read(FDC_DMA_CHANNEL, 0x0200, 512-1);
     
     fdc_motor_on(0);
 
