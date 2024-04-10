@@ -52,7 +52,7 @@ void timer_reset(Timer *t){
 }
 
 void sleep(uint32_t tick){
-    Queue8 *q = q8_make(10, 0);
+    Queue8 *q = q8_make(TIMER_QUEUE_SIZE, 0);
     Timer *t = timer_alloc(q, tick, TIMER_MODE_ONESHOT);
     timer_reset(t);
     while(q8_empty(q)) io_hlt();

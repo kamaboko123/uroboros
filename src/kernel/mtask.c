@@ -218,7 +218,6 @@ void sched(void){
                 //コンテキストスイッチ
                 //このスケジューラ自体もタスクの1つなので、ここまでのコンテキストは保存される
                 //(次のコンテキストスイッチでは、この後から復帰し、再びタスクの選択を行うところから）
-                if(strcmp(sys->cpu->proc->name, "task_timer") != 0) BREAK();
                 context_switch(&sys->cpu->sched.sched_proc->context, proc->context);
                 
             }

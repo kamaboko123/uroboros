@@ -10,7 +10,7 @@ typedef struct Cpu Cpu;
 typedef struct Console Console;
 typedef struct Timer Timer;
 
-typedef struct SYSTEM{
+typedef struct System{
     //コンソール(Serial port)
     Queue8 *com1_in;
     Queue8 *com1_out;
@@ -30,9 +30,9 @@ typedef struct SYSTEM{
     bool fdc_intr;
 
     uint8_t *vram;
-} SYSTEM;
+} System;
 
-extern SYSTEM *sys;
+extern System *sys;
 
 
 void task_ring3(void);

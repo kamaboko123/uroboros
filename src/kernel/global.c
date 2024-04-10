@@ -1,3 +1,3 @@
 #include "global.h"
 
-SYSTEM *sys;
+System *sys;

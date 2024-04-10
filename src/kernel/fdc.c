@@ -35,7 +35,7 @@ FdcResult init_fdc(){
     }
 
     //FDCの設定をしていく
-    //データレート
+    //データレート(bochsでメッセージ出るが無視して良い？)
     io_out8(IO_PORT_FDC_CCR, FDC_CCR_500K);
 
     //物理的な動作時間の設定なので、qemuなら何でも良い？
@@ -56,18 +56,21 @@ FdcResult init_fdc(){
         fdc_motor_off(i);
     }
 
-    fdc_motor_on(0);
     return FDC_OK;
 }
 
 //TODO: impl
 void fdc_cmd_read_data(){
+    dma_init_write_mode(FDC_DMA_CHANNEL, 0x0200, 512-1);
+    
+    fdc_motor_on(0);
+
     sys->fdc_intr = false;
     io_out8(IO_PORT_FDC_DATA, FDC_CMD_READ_DATA | 0x40); //multi track
     io_out8(IO_PORT_FDC_DATA, 0x00);//drive0
     io_out8(IO_PORT_FDC_DATA, 0x00);//cyliner0
     io_out8(IO_PORT_FDC_DATA, 0x00);//head0
-    io_out8(IO_PORT_FDC_DATA, 0x00);//sector0
+    io_out8(IO_PORT_FDC_DATA, 0x01);//sector0 (1始まり)
     io_out8(IO_PORT_FDC_DATA, 0x02);//sector_size(512KB)
     io_out8(IO_PORT_FDC_DATA, 18);//sector per track(18)
     io_out8(IO_PORT_FDC_DATA, 27);//gap3
@@ -77,7 +80,10 @@ void fdc_cmd_read_data(){
     sys->fdc_intr = false;
 
     FdcCmdStatus status_buf;
-    fdc_read_status(&status_buf);
+    fdc_read_status(&status_buf, 7);
+    
+    fdc_motor_off(0);
+    
     for(int i = 0; i < 7; i++){
         char str[64];
         sprintf(str, "status_buf[%d]: %x\n", i, ((uint8_t *)&status_buf)[i]);
@@ -88,7 +94,8 @@ void fdc_cmd_read_data(){
 FdcCmdStatusSenseInterruptStatus *fdc_cmd_sense_interrupt_status(FdcCmdStatus *buf){
     io_out8(IO_PORT_FDC_DATA, FDC_CMD_SENSE_INTERRUPT_STATUS);
     
-    fdc_read_status(buf);
+    //DEBUG: readが3byteしか返ってこない？
+    fdc_read_status(buf, 2);
     return (FdcCmdStatusSenseInterruptStatus *)buf;
 }
 
@@ -119,14 +126,14 @@ FdcResult fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t h
     io_out8(IO_PORT_FDC_DATA, head_load_time << 1 | dma);
     
     //cmd command doesn't return status
-    FdcCmdStatus buf;
-    fdc_read_status(&buf);
+    //FdcCmdStatus buf;
+    //fdc_read_status(&buf);
     return FDC_OK;
 }
 
-void fdc_read_status(FdcCmdStatus *buf){
+void fdc_read_status(FdcCmdStatus *buf, uint8_t bytes_count){
     uint8_t *p = (uint8_t *)buf;
-    for(int i = 0; i < 7; i++){
+    for(int i = 0; i < bytes_count; i++){
         *(p + i) = io_in8(IO_PORT_FDC_DATA);
     }
 }

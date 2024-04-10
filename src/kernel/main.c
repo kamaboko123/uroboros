@@ -33,7 +33,7 @@ void Main(uint8_t *kargs, ...){
     init_tss(tss0, (GDT_SEG_DESC *)GDT_ADDR + GDT_SEGNUM_TSS0, (GDTR *)GDTR_ADDR);
 
     //global変数の領域を確保
-    sys = (SYSTEM *)kvmalloc(sizeof(SYSTEM));
+    sys = (System *)kvmalloc(sizeof(System));
     
     //グラフィック初期化
     sys->vram = (uint8_t *)VRAM_ADDR_V;
@@ -51,7 +51,7 @@ void Main(uint8_t *kargs, ...){
 
     //システムタイマ
     timer_init();
-    sys->task_timer = q8_make(256, 0);
+    sys->task_timer = q8_make(TIMER_QUEUE_SIZE, 0);
     timer_alloc(sys->task_timer, 1, TIMER_MODE_ONESHOT);
 
     //serial port
@@ -93,8 +93,6 @@ void Main(uint8_t *kargs, ...){
     //ktask_init(p, "test_task2", (uint32_t)test_task, sizeof(char *) + sizeof(int), "test_task2\n", 15000000);
     
 
-    BREAK();
-
     print_asc(0, 0, 7, "Welcome to UroborOS!");
     // スケジューラタスクに切り替えて、これ以降はスケジューラによるタスク選択に委ねる
     start_mtask(sys->cpu->sched.sched_proc->context);
@@ -124,8 +122,9 @@ void task_fdc(){
     char str[128];
     sprintf(str, "fdc init result: %d\n", result);
     serial_putstr(str);
-
-    //init_fdc_dma();
+    
+    fdc_cmd_read_data();
+    BREAK();
     while(1){}
     ktask_exit();
 }

@@ -78,6 +78,8 @@
 #define IDT_SIZE            256 * 8
 #define IDTR_ADDR           (IDT_ADDR + IDT_SIZE - 16)
 
+//timer
+#define TIMER_QUEUE_SIZE 32
 
 #define KTASK_STACK_SIZE 2048
 

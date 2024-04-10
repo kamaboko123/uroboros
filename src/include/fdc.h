@@ -6,7 +6,7 @@
 #include "asmlib.h"
 #include "console.h"
 #include "timer.h"
-
+#include "dma.h"
 
 #define IO_PORT_FDC_DOR 0x3F2
 #define FDC_DOR_DRIVE0 0x00
@@ -44,8 +44,9 @@
 #define FDC_ERROR_NOT_READY 0x01
 #define FDC_ERROR_RECALIBRATE 0x01
 
-typedef uint8_t FdcResult;
+#define FDC_DMA_CHANNEL 2
 
+typedef uint8_t FdcResult;
 
 typedef struct FdcSt0{
     uint8_t ds0:1;
@@ -76,12 +77,11 @@ void fdc_cmd_read_data();
 void fdc_motor_on(uint8_t drive);
 void fdc_motor_off(uint8_t drive);
 bool check_fdc_data_ready(uint8_t direction);
-void fdc_read_status(FdcCmdStatus *buf);
+void fdc_read_status(FdcCmdStatus *buf, uint8_t bytes_count);
 
 //FDC commands
 FdcResult fdc_cmd_recalibrate(uint8_t drive);
 FdcCmdStatusSenseInterruptStatus *fdc_cmd_sense_interrupt_status(FdcCmdStatus *buf);
 FdcResult fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t head_load_time, uint8_t dma);
 
-void init_fdc_dma(void);
 #endif

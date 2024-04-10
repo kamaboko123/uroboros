@@ -88,7 +88,7 @@ run: $(IMG)
 	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy,index=0 -serial stdio
 
 debug: $(IMG)
-	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy -S -gdb tcp::10000
+	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy,index=0 -serial stdio -S -gdb tcp::10000
 
 run_bochs:
 	bochs -f $(BOCHS_CONF)

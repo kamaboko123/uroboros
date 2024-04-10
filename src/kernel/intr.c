@@ -123,11 +123,7 @@ void int_handler(IntrFrame iframe){
         pic_eoi(PIC_IRQ4);
     }
     else if(iframe.intrnum == PIC_INTR_VEC_BASE + PIC_IRQ6){
-        // FDC
         sys->fdc_intr = true;
-        char str[64];
-        sprintf(str, "fdc_interrupt!\n");
-        serial_putstr(str);
         pic_eoi(PIC_IRQ6);
     }
     else if(iframe.intrnum <= 0x1f){
