@@ -6,8 +6,6 @@ void calc_chs(uint32_t lba, uint16_t *c, uint16_t *h, uint16_t *s){
     *s = (lba % 18) + 1;
 }
 
-void init_fdc_dma(void){}
-
 FdcResult init_fdc(){
     //割り込みフラグを戻しておく
     sys->fdc_intr = false;
@@ -46,6 +44,9 @@ FdcResult init_fdc(){
         FDC_CMD_SPECIFY_PARAM_DMA_ENABLE
     );
 
+    // auto seekを有効にする(configureコマンド)
+    fdc_enable_auto_seek();
+
     //最初にRECALIBRATEを実施する必要がある(ヘッドをトラック0に戻す)
     //使用するドライブのモータをONにしておく必要がある
     for(int i = 0; i < 2; i++){
@@ -60,21 +61,21 @@ FdcResult init_fdc(){
 }
 
 //TODO: impl
-void fdc_cmd_read_data(){
-    dma_init_for_fd_read(FDC_DMA_CHANNEL, 0x0200, 512-1);
+FdcResult fdc_cmd_read_data(uint8_t drive, uint16_t phy_addr, uint8_t cylinder, uint8_t head, uint8_t sector){
+    dma_init_for_fd_read(FDC_DMA_CHANNEL, phy_addr, FD_SECTOR_SIZE - 1);
     
-    fdc_motor_on(0);
+    fdc_motor_on(drive);
 
     sys->fdc_intr = false;
     io_out8(IO_PORT_FDC_DATA, FDC_CMD_READ_DATA | 0x40); //multi track
-    io_out8(IO_PORT_FDC_DATA, 0x00);//drive0
-    io_out8(IO_PORT_FDC_DATA, 0x00);//cyliner0
-    io_out8(IO_PORT_FDC_DATA, 0x00);//head0
-    io_out8(IO_PORT_FDC_DATA, 0x01);//sector0 (1始まり)
-    io_out8(IO_PORT_FDC_DATA, 0x02);//sector_size(512KB)
-    io_out8(IO_PORT_FDC_DATA, 18);//sector per track(18)
-    io_out8(IO_PORT_FDC_DATA, 27);//gap3
-    io_out8(IO_PORT_FDC_DATA, 0xff);//data length
+    io_out8(IO_PORT_FDC_DATA, drive);
+    io_out8(IO_PORT_FDC_DATA, cylinder);
+    io_out8(IO_PORT_FDC_DATA, head);
+    io_out8(IO_PORT_FDC_DATA, sector);
+    io_out8(IO_PORT_FDC_DATA, FDC_CMD_READ_DATA_SECTOR_SIZE_512K);
+    io_out8(IO_PORT_FDC_DATA, FD_SECTORS);
+    io_out8(IO_PORT_FDC_DATA, FDC_CMD_READ_DATA_GAP3);
+    io_out8(IO_PORT_FDC_DATA, FDC_CMD_READ_DATA_DATA_LENGTH);
 
     while(!sys->fdc_intr);
     sys->fdc_intr = false;
@@ -82,13 +83,17 @@ void fdc_cmd_read_data(){
     FdcCmdStatus status_buf;
     fdc_read_status(&status_buf, 7);
     
-    fdc_motor_off(0);
+    fdc_motor_off(drive);
     
+    // TODO: check error
+    /*
     for(int i = 0; i < 7; i++){
         char str[64];
         sprintf(str, "status_buf[%d]: %x\n", i, ((uint8_t *)&status_buf)[i]);
         serial_putstr(str);
-    }
+    }*/
+
+    return FDC_OK;
 }
 
 FdcCmdStatusSenseInterruptStatus *fdc_cmd_sense_interrupt_status(FdcCmdStatus *buf){
@@ -125,9 +130,18 @@ FdcResult fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t h
     io_out8(IO_PORT_FDC_DATA, (step_rate << 4) | head_unload_time);
     io_out8(IO_PORT_FDC_DATA, head_load_time << 1 | dma);
     
-    //cmd command doesn't return status
-    //FdcCmdStatus buf;
-    //fdc_read_status(&buf);
+    //command doesn't return status
+    return FDC_OK;
+}
+
+FdcResult fdc_enable_auto_seek(){
+    if(!check_fdc_data_ready(FDC_MSR_DIO_WRITE)) return FDC_ERROR_NOT_READY;
+    io_out8(IO_PORT_FDC_DATA, FDC_CMD_CONFIGURE);
+    io_out8(IO_PORT_FDC_DATA, 0x00);
+    // ほかは0
+    io_out8(IO_PORT_FDC_DATA, FDC_CMD_CONFIGURE_AUTO_SEEK | FDC_CMD_CONFIGURE_FIFO_DISABLE | FDC_CMD_CONFIGURE_FIFO_THRESHOLD_DEFAULT);
+    io_out8(IO_PORT_FDC_DATA, 0x00);
+    //command doesn't return status
     return FDC_OK;
 }
 
@@ -145,7 +159,7 @@ void fdc_motor_on(uint8_t drive){
     else if(drive == 1){
         io_out8(IO_PORT_FDC_DOR, FDC_DOR_DRIVE1 | FDC_DOR_MOTOR1 | FDC_DOR_RESET | FDC_DOR_DMA);
     }
-    sleep(300);
+    //sleep(1);
 }
 
 void fdc_motor_off(uint8_t drive){
@@ -161,4 +175,3 @@ bool check_fdc_data_ready(uint8_t direction){
     uint8_t msr = io_in8(IO_PORT_FDC_MSR);
     return (msr & FDC_MSR_RQM) != 0 && (msr & FDC_MSR_DIO) == direction;
 }
-

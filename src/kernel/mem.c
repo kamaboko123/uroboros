@@ -104,12 +104,12 @@ void init_vmem_block(V_MEM_BLOCKINFO *block){
 }
 
 
-void init_kvmalloc(uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end){
+void init_kvmalloc(uint32_t extent_start, uint32_t init_extent_end){
     V_MEMMAN *memman = (V_MEMMAN *)VMALLOC_MAN_ADDR;
-    init_vmalloc(memman, extent_start, init_extent_end, max_extent_end, KERNEL_PDT);
+    init_vmalloc(memman, extent_start, init_extent_end, KERNEL_PDT);
 }
 
-void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_end, uint32_t max_extent_end, uint32_t pdt){
+void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_end, uint32_t pdt){
     //管理用の領域確保
     for(int i = 0; i < mem_npage(sizeof(V_MEMMAN)); i++){
         uint32_t mem = (uint32_t)pmalloc_4k();
@@ -118,7 +118,6 @@ void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_
 
     memman->extent_start = extent_start;
     memman->extent_end = init_extent_end;
-    memman->extent_max = max_extent_end;
     memman->pdt = pdt;
 
     for(int i = 0; i < VMEM_MAX_UNITS; i++){

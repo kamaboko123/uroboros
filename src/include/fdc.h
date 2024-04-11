@@ -33,16 +33,42 @@
 #define FDC_CMD_RECALIBRATE 0x07
 #define FDC_CMD_SEEK 0x0F
 #define FDC_CMD_READ_DATA 0x06
+#define FDC_CMD_CONFIGURE 0x13
 
 #define FDC_CMD_SPECIFY_PARAM_DMA_ENABLE 0x00
 #define FDC_CMD_SPECIFY_PARAM_STEP_RATE 0x0f
 #define FDC_CMD_SPECIFY_PARAM_HEAD_UNLOAD_TIME 0x0f
 #define FDC_CMD_SPECIFY_PARAM_HEAD_LOAD_TIME 0x0f
 
+//設定値をNとして `sector_size = 2 ^ N * 128` となるNを指定する
+// 512 = 2 ^ N * 128
+// 512 / 128 = 2 ^ N
+// 4 = 2 ^ N
+// N = 2
+#define FDC_CMD_READ_DATA_SECTOR_SIZE_512K 0x02
+#define FDC_CMD_READ_DATA_GAP3 27
+#define FDC_CMD_READ_DATA_DATA_LENGTH 0xFF  // コマンド内のセクタサイズが0以外の場合は0xFFを指定するらしい
+
+#define FDC_CMD_CONFIGURE_FIFO_THRESHOLD_DEFAULT  0x01       // デフォルト1
+#define FDC_CMD_CONFIGURE_POLL_DISABLE    0x01 << 4  // デフォルト0
+#define FDC_CMD_CONFIGURE_FIFO_DISABLE    0x01 << 5  // デフォルト1
+#define FDC_CMD_CONFIGURE_AUTO_SEEK       0x01 << 6  // デフォルト0
+#define FDC_CMD_CONFIGURE_PRETRACK_0      0x00       // デフォルト0
+
+
 // FDC制御の結果
 #define FDC_OK 0x00
 #define FDC_ERROR_NOT_READY 0x01
 #define FDC_ERROR_RECALIBRATE 0x01
+
+// フロッピーの物理的なパラメータ(3.5inch 2HD 1.44MB)
+#define FD_SECTORS 18
+#define FD_HEADS 2
+#define FD_CYLINDERS 80
+#define FD_SECTOR_SIZE 512
+
+#define FD_DRIVE0 0
+#define FD_DRIVE1 1
 
 #define FDC_DMA_CHANNEL 2
 
@@ -71,7 +97,7 @@ typedef struct FdcCmdStatusSenseInterruptStatus{
 
 // High level functions
 FdcResult init_fdc(void);
-void fdc_cmd_read_data();
+FdcResult fdc_cmd_read_data(uint8_t drive, uint16_t phy_addr, uint8_t cylinder, uint8_t head, uint8_t sector);
 
 // FDC controll and general functions
 void fdc_motor_on(uint8_t drive);
@@ -84,4 +110,5 @@ FdcResult fdc_cmd_recalibrate(uint8_t drive);
 FdcCmdStatusSenseInterruptStatus *fdc_cmd_sense_interrupt_status(FdcCmdStatus *buf);
 FdcResult fdc_cmd_specify(uint8_t step_rate, uint8_t head_unload_time, uint8_t head_load_time, uint8_t dma);
 
+FdcResult fdc_enable_auto_seek();
 #endif

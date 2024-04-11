@@ -21,7 +21,7 @@ void Main(uint8_t *kargs, ...){
     enable_paging(KERNEL_PDT, new_stack_p + KERNEL_STACK_SIZE - 4, KERNEL_STACK_TOP_V + KERNEL_STACK_SIZE - 4);
     
     //vmalloc初期化
-    init_kvmalloc(VMALLOC_START, VMALLOC_INIT_END, VMALLOC_MAX_END);
+    init_kvmalloc(VMALLOC_START, VMALLOC_INIT_END);
     //GDTを正式なものにする
     init_gdt((GDT_SEG_DESC *)GDT_ADDR, (GDTR *)GDTR_ADDR);
     
@@ -122,8 +122,35 @@ void task_fdc(){
     char str[128];
     sprintf(str, "fdc init result: %d\n", result);
     serial_putstr(str);
-    
-    fdc_cmd_read_data();
+
+    uint32_t fd_size = FD_SECTOR_SIZE * FD_CYLINDERS * FD_HEADS * FD_SECTORS;
+    uint8_t *buf = (uint8_t *)kvmalloc(fd_size);
+    map_memory_4k((PDE *)KERNEL_PDT, FD_BUFFER_V, FD_BUFFER_P);
+
+    uint32_t cnt = 0;
+    // read all sectors
+    for(int c = 0; c < FD_CYLINDERS; c++){
+        for(int h = 0; h < FD_HEADS; h++){
+            for(int s = 1; s <= FD_SECTORS; s++){
+                fdc_cmd_read_data(0, FD_BUFFER_P, c, h, s);
+                memcpy((char *)buf + cnt, (char *)FD_BUFFER_V, 512);
+                cnt += FD_SECTOR_SIZE;
+            }
+            serial_putstr(".");
+        }
+        serial_putstr("\n");
+    }
+    serial_putstr("read all sectors\n");
+    serial_putstr("===\n");
+    for(int i = 0; i < 512*4; i++){
+        char str[64];
+        sprintf(str, "%02x ", buf[i]);
+        serial_putstr(str);
+        if(i % 16 == 15){
+            serial_putstr("\n");
+        }
+    }
+    serial_putstr("===\n");
     BREAK();
     while(1){}
     ktask_exit();

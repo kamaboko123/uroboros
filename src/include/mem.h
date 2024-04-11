@@ -94,9 +94,9 @@ typedef struct V_MEMMAN{
 
 
 
+void init_kvmalloc(uint32_t extent_start, uint32_t init_extent_end);
 void init_vmem_block(V_MEM_BLOCKINFO *block);
-void init_kvmalloc(uint32_t extent_start, uint32_t init_extend_end, uint32_t max_extent_end);
-void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extend_end, uint32_t max_extent_end, uint32_t pdt);
+void init_vmalloc(V_MEMMAN *memman, uint32_t extent_start, uint32_t init_extent_end, uint32_t pdt);
 void *vmalloc(V_MEMMAN *memman, uint32_t size);
 void vfree(V_MEMMAN *memman, void *addr);
 void *kvmalloc(uint32_t size);

@@ -75,7 +75,7 @@ void console_exec(Console *con, char *line){
 
         while(p->next != NULL){
             if((p->flags & VMEM_BLOCKS_ALLOC) != 0){
-                sprintf(str, "[block] [virt: 0x%08x - 0x%08x] [phys: 0x%08x - 0x%08x] (size: %d byte, %d 4k-pages)\n", p->addr, p->addr + p->size -1, p->p_mem->addr, p->p_mem->addr - p->size - 1, p->size, mem_npage(p->size));
+                sprintf(str, "[block] [virt: 0x%08x - 0x%08x] [phys: 0x%08x - 0x%08x] (size: %u byte, %d 4k-pages)\n", p->addr, p->addr + p->size -1, p->p_mem->addr, p->p_mem->addr - p->size - 1, p->size, mem_npage(p->size));
                 console_putstr(con, str);
             }
             p = p->next;

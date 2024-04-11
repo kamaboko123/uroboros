@@ -14,7 +14,7 @@
 //vmalloc
 #define VMALLOC_MAN_ADDR    0x00a01000
 #define VMALLOC_START       0x03000000
-#define VMALLOC_INIT_END    0x03100000
+#define VMALLOC_INIT_END    0x04000000
 #define VMALLOC_MAX_END     0x04000000
 
 //#define VMALLOC_ALIGNMENT   0x00000010
@@ -80,6 +80,12 @@
 
 //timer
 #define TIMER_QUEUE_SIZE 32
+
+
+//Floppy
+#define FD_BUFFER_V 0x00B01000
+#define FD_BUFFER_P 0x00000000
+#define FD_BUFFER_SIZE 4096
 
 #define KTASK_STACK_SIZE 2048
 
