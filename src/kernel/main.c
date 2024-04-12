@@ -136,10 +136,9 @@ void task_fdc(){
                 memcpy((char *)buf + cnt, (char *)FD_BUFFER_V, 512);
                 cnt += FD_SECTOR_SIZE;
             }
-            serial_putstr(".");
         }
-        serial_putstr("\n");
     }
+    /*
     serial_putstr("read all sectors\n");
     serial_putstr("===\n");
     for(int i = 0; i < 512*4; i++){
@@ -151,6 +150,18 @@ void task_fdc(){
         }
     }
     serial_putstr("===\n");
+    */
+
+    serial_putstr("==Floppy root directory entries==\n");
+
+    BPB *bpb = (BPB *)buf;
+    RDE *rde = get_first_rde(bpb);
+    for(int i = 0; i < 10; i++){
+        char str[128];
+        sprintf(str, "filename: %s\n", (rde+i)->filename);
+        serial_putstr(str);
+    }
+
     BREAK();
     while(1){}
     ktask_exit();
