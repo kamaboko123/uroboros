@@ -87,7 +87,7 @@
 #define FD_BUFFER_P 0x00000000
 #define FD_BUFFER_SIZE 4096
 
-#define KTASK_STACK_SIZE 2048
+#define KTASK_STACK_SIZE 4096 * 4
 
 // debug macro
 // magic break for bochs

@@ -17,5 +17,6 @@
 #include "fdc.h"
 #include "global.h"
 #include "fat.h"
+#include "rustlib.h"
 
 #endif

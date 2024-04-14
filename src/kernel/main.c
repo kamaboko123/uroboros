@@ -22,6 +22,7 @@ void Main(uint8_t *kargs, ...){
     
     //vmalloc初期化
     init_kvmalloc(VMALLOC_START, VMALLOC_INIT_END);
+    
     //GDTを正式なものにする
     init_gdt((GDT_SEG_DESC *)GDT_ADDR, (GDTR *)GDTR_ADDR);
     
@@ -31,7 +32,7 @@ void Main(uint8_t *kargs, ...){
     //TSS初期化
     TSS32 *tss0 = (TSS32 *)kvmalloc(sizeof(TSS32));
     init_tss(tss0, (GDT_SEG_DESC *)GDT_ADDR + GDT_SEGNUM_TSS0, (GDTR *)GDTR_ADDR);
-
+    
     //global変数の領域を確保
     sys = (System *)kvmalloc(sizeof(System));
     
@@ -62,7 +63,7 @@ void Main(uint8_t *kargs, ...){
 
     //シリアルポートとコンソールを接続
     sys->console1 = console_init(sys->com1_in, sys->com1_out);
-    
+
     //マルチタスク
     init_mtask();
     Process *p;
@@ -162,7 +163,10 @@ void task_fdc(){
         serial_putstr(str);
     }
 
-    BREAK();
+    sprintf(str, "z: %u\n", rust_func_add(100, 200));
+    serial_putstr(str);
+
+    
     while(1){}
     ktask_exit();
 }

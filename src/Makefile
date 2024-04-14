@@ -31,6 +31,17 @@ KERNEL_ASM_SRC = $(wildcard $(KERNEL_ASM_SRC_DIR)/*.s)
 KERNEL_ASM_OBJ_DIR = $(TARGET_DIR)/asm
 KERNEL_ASM_OBJ = $(addprefix $(KERNEL_ASM_OBJ_DIR)/, $(notdir $(KERNEL_ASM_SRC:.s=.o)))
 
+# release or debug
+RUST_BUILD_MODE = release
+RUST_LIB_NAME= liburoboros_rs
+cargo_build_mode = $(shell if [ "$(RUST_BUILD_MODE)" = "release" ]; then echo --release; fi)
+RUST_BUILD_CMD = cargo build --lib -Zbuild-std $(cargo_build_mode)
+KERNEL_RUST_SRC_DIR = kernel/rust
+KERNEL_RUST_SRC = $(wildcard $(KERNEL_RUST_SRC_DIR)/src/*.rs)
+KERNEL_RUST_OBJ_DIR = $(TARGET_DIR)/rust
+KERNEL_RUST_OBJ = $(KERNEL_RUST_OBJ_DIR)/$(RUST_LIB_NAME).a
+
+
 KERNEL = $(TARGET_DIR)/kernel.bin
 KERNEL_MEMMAP = $(TARGET_DIR)/kernel.map
 
@@ -72,9 +83,14 @@ $(KERNEL_ASM_OBJ_DIR)/%.o : $(KERNEL_ASM_SRC_DIR)/%.s
 	mkdir -p $(KERNEL_ASM_OBJ_DIR)
 	$(AS) $(ASFLAGS) -o $@ $^
 
+$(KERNEL_RUST_OBJ) : $(KERNEL_RUST_SRC)
+	mkdir -p $(KERNEL_RUST_OBJ_DIR)
+	cd $(KERNEL_RUST_SRC_DIR); $(RUST_BUILD_CMD)
+	cd $(CURDIR)
+	cp $(KERNEL_RUST_SRC_DIR)/target/i686-unknown-none/$(RUST_BUILD_MODE)/$(RUST_LIB_NAME).a $@
 
-$(KERNEL) : $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT)
-	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $(TARGET_DIR)/kernel.elf $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT) 
+$(KERNEL) : $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT) $(KERNEL_RUST_OBJ)
+	$(LD) $(LDFLAGS) -e Main -T$(KERNEL_LS) -Map $(KERNEL_MEMMAP) -o $(TARGET_DIR)/kernel.elf $(KERNEL_OBJ) $(KERNEL_ASM_OBJ) $(FONT) $(KERNEL_RUST_OBJ)
 	objcopy -O binary $(TARGET_DIR)/kernel.elf $@
 
 $(KERNEL_IMG) : $(KERNEL) $(OSL)
@@ -99,3 +115,8 @@ debug_bochs:
 clean:
 	rm -rf $(TARGET_DIR)
 
+clean_all:
+	rm -rf $(TARGET_DIR)
+	cd $(FONT_DIR); make clean
+	cd $(FONT_DIR); make clean
+	cd $(KERNEL_RUST_SRC_DIR); cargo clean
