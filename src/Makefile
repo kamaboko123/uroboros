@@ -35,7 +35,7 @@ KERNEL_ASM_OBJ = $(addprefix $(KERNEL_ASM_OBJ_DIR)/, $(notdir $(KERNEL_ASM_SRC:.
 RUST_BUILD_MODE = release
 RUST_LIB_NAME= liburoboros_rs
 cargo_build_mode = $(shell if [ "$(RUST_BUILD_MODE)" = "release" ]; then echo --release; fi)
-RUST_BUILD_CMD = cargo build --lib -Zbuild-std $(cargo_build_mode)
+RUST_BUILD_CMD = cargo build --lib -Zbuild-std=std,panic_abort $(cargo_build_mode)
 KERNEL_RUST_SRC_DIR = kernel/rust
 KERNEL_RUST_SRC = $(wildcard $(KERNEL_RUST_SRC_DIR)/src/*.rs)
 KERNEL_RUST_OBJ_DIR = $(TARGET_DIR)/rust

@@ -3,6 +3,6 @@
 
 #include "stdint.h"
 
-uint32_t rust_func_add(uint32_t a, uint32_t b);
+uint32_t rust_func(uint32_t a, uint32_t b);
 
 #endif

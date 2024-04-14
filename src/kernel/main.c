@@ -163,7 +163,7 @@ void task_fdc(){
         serial_putstr(str);
     }
 
-    sprintf(str, "z: %u\n", rust_func_add(100, 200));
+    sprintf(str, "z: %u\n", rust_func(100, 200));
     serial_putstr(str);
 
     
