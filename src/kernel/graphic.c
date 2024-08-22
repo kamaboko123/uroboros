@@ -1,7 +1,7 @@
 #include "graphic.h"
 
 void init_palette(void){
-    static uint8_t table_rgb[16 * 3] = {
+    uint8_t table_rgb[16 * 3] = {
             0x00, 0x00, 0x00,
             0xff, 0x00, 0x00,
             0x00, 0xff, 0x00,

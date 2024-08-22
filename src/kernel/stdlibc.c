@@ -302,8 +302,8 @@ void rand_seed(uint32_t x){
 uint32_t rand(){
     //線形合同法による乱数生成
     //ポケモン3,4世代と同じ値
-    static uint32_t a = 0x41c64e6d;
-    static uint32_t b = 0x6073;
+    uint32_t a = 0x41c64e6d;
+    uint32_t b = 0x6073;
     __last_rand = (a * __last_rand + b) % (_UINT_MAX / 2);
     return __last_rand;
 }

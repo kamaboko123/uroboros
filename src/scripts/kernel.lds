@@ -1,21 +1,24 @@
+MEMORY
+{
+  RAM (rwx) : ORIGIN = 0x00100000, LENGTH = 1M
+}
+
 SECTIONS {
-    . = 0x00100000;
     .text : {
         bin/c/main.o(Main)
-        *(.text)
-    }
+        *(.text .text.*)
+    } > RAM
     
     .bss : {
-        *(.bss)
-    }
+        *(.bss .bss.*)
+    } > RAM
     
     .data : {
-        *(.data)
-    }
+        *(.data .data.*)
+    } > RAM
     
     .rodata : {
-        *(.rodata)
-    }
-    
+        *(.rodata .rodata.*)
+    } > RAM
 }
 

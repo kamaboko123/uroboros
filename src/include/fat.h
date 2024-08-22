@@ -54,7 +54,6 @@ typedef struct RDE{
 }__attribute__((packed)) RDE;
 
 
-
 FAT12 *get_first_fat12(BPB *bpb);
 RDE *get_first_rde(BPB *bpb);
 
