@@ -158,10 +158,10 @@ void task_fdc(){
     BPB *bpb = (BPB *)buf;
     RDE *rde = get_first_rde(bpb);
     for(int i = 0; i < 10; i++){
-        fat_print_rde(rde + i);
-        //char str[128];
-        //sprintf(str, "filename: %s\n", (rde+i)->filename);
-        //serial_putstr(str);
+        //fat_print_rde(rde + i);
+        char str[128];
+        sprintf(str, "filename: %s\n", (rde+i)->filename);
+        serial_putstr(str);
     }
 
     //sprintf(str, "z: %u\n", rust_func(100, 200));

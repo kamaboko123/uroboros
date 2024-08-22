@@ -17,6 +17,6 @@
 #include "fdc.h"
 #include "global.h"
 #include "fat.h"
-#include "uroboros_rs.h"
+//#include "uroboros_rs.h"
 
 #endif
