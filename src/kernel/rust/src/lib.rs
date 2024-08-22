@@ -8,8 +8,8 @@ use core::ffi::c_uint;
 extern "C" {
     fn kvmalloc(size: c_uint) -> c_uint;
     fn kvfree(addr: c_uint);
+    fn serial_putstr(s: *const u8);
 }
-
 
 struct UrobosAllocator;
 
@@ -34,3 +34,5 @@ pub extern "C" fn rust_func(x:u32, y:u32) -> u32 {
     let z:u32 = str.parse().unwrap();
     x + y + z
 }
+
+pub mod fat;
