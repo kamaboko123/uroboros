@@ -349,3 +349,13 @@ char *strncpy(char *s1, char *s2, int n){
     return(s1);
 }
 
+char *strncat(char *s1, char *s2, int n){
+    char *p = (s1 + strlen(s1));
+    int i;
+    for(i = 0; i < n; i++){
+        p[i] = s2[i];
+        if(s2[i] == '\0') return(s1);
+    }
+    p[i] = '\0';
+    return(s1);
+}

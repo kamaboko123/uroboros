@@ -156,7 +156,7 @@ void task_fdc(){
     serial_putstr("==Floppy root directory entries==\n");
 
     BPB *bpb = (BPB *)buf;
-    RDE *rde = get_first_rde(bpb);
+    RDE *rde = get_rde(bpb);
     for(int i = 0; i < 10; i++){
         //fat_print_rde(rde + i);
         char str[128];

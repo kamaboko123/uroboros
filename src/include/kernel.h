@@ -16,7 +16,7 @@
 #include "mtask.h"
 #include "fdc.h"
 #include "global.h"
-#include "fat.h"
+#include "fat12.h"
 //#include "uroboros_rs.h"
 
 #endif

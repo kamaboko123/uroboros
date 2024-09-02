@@ -33,5 +33,6 @@ uint32_t rounddown(uint32_t x, uint32_t n);
 
 char *strcpy(char *s1, char *s2);
 char *strncpy(char *s1, char *s2, int n);
+char *strncat(char *s1, char *s2, int n);
 
 #endif
