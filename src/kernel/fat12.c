@@ -188,7 +188,7 @@ void read_sector(BPB *bpb, uint32_t cluster, uint8_t *buf, uint32_t size){
     uint8_t *data_sector = get_first_data_sector(bpb);
     // fat entry 0, 1はデータ領域には含まれない
     data_sector += (cluster - 2) * bpb->bytes_per_sector;
-    memcpy((char *)buf, (char *)data_sector, size);
+    memcpy(buf, data_sector, size);
 }
 
 

@@ -134,7 +134,7 @@ void task_fdc(){
         for(int h = 0; h < FD_HEADS; h++){
             for(int s = 1; s <= FD_SECTORS; s++){
                 fdc_cmd_read_data(0, FD_BUFFER_P, c, h, s);
-                memcpy((char *)buf + cnt, (char *)FD_BUFFER_V, 512);
+                memcpy(buf + cnt, (uint8_t *)FD_BUFFER_V, 512);
                 cnt += FD_SECTOR_SIZE;
             }
         }

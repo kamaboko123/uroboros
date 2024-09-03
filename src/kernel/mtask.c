@@ -111,7 +111,7 @@ void ktask_init(Process *proc, char *name, uint32_t task_entry_addr, uint32_t ar
     uint8_t *arg_head = (uint8_t *)(&arg_size + 1);
     // タスクのスタックに引数をコピーする
     // (タスク側も引数として受け取るのでスタックポインタも更新する)
-    memcpy((char *)sp - arg_size, (char *)arg_head, arg_size);
+    memcpy((uint8_t *)(sp - arg_size), arg_head, arg_size);
     sp -= arg_size;
 
     sp -= 4;

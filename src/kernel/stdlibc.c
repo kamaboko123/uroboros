@@ -191,10 +191,10 @@ bool iscapital(char c){
     return((c >= 'A' && c <= 'Z'));
 }
 
-char *memcpy(char *buf1, char *buf2, int n){
+char *memcpy(void *buf1, void *buf2, int n){
     int i;
     for(i = 0; i < n; i++){
-            buf1[i] = buf2[i];
+            *((char *)buf1 + i) = *((char *)buf2 + i);
         }
     return buf1;
 }

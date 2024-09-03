@@ -18,7 +18,7 @@ uint32_t upow(uint32_t x, uint32_t n);
 bool iscapital(char c);
 int atoi(char *s);
 bool isdigit(char c);
-char *memcpy(char *buf1, char *buf2, int n);
+char *memcpy(void *buf1, void *buf2, int n);
 int memset(char *buf, char byte, int n);
 int strcmp(char *s1, char *s2);
 int strncmp(char *s1, char *s2, uint32_t n);
