@@ -55,6 +55,9 @@ void Main(uint8_t *kargs, ...){
     sys->task_timer = q8_make(TIMER_QUEUE_SIZE, 0);
     timer_alloc(sys->task_timer, 1, TIMER_MODE_ONESHOT);
 
+    //syscall
+    set_idt((IDT *)IDT_ADDR, INTR_NUM_SYSCALL, int80_handler);
+
     //serial port
     init_serial_port();
     sys->com1_in = q8_make(256, 0xff);
@@ -99,6 +102,11 @@ void Main(uint8_t *kargs, ...){
     start_mtask(sys->cpu->sched.sched_proc->context);
 }
 
+void task_syscall(void){
+    int80h();
+    ktask_exit();
+}
+
 void task_a(void){
     //return;
     for(char *c="taska!!"; *c!='\0'; c++){
@@ -133,7 +141,7 @@ void task_fdc(){
     for(int c = 0; c < FD_CYLINDERS; c++){
         for(int h = 0; h < FD_HEADS; h++){
             for(int s = 1; s <= FD_SECTORS; s++){
-                fdc_cmd_read_data(0, FD_BUFFER_P, c, h, s);
+                fdc_cmd_read_data(FD_DRIVE1, FD_BUFFER_P, c, h, s);
                 memcpy(buf + cnt, (uint8_t *)FD_BUFFER_V, 512);
                 cnt += FD_SECTOR_SIZE;
             }

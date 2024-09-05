@@ -41,6 +41,7 @@ void task_b(void);
 void task_fdc(void);
 void test_task(char *str, int interval);
 void task_console(void);
+void task_syscall(void);
 
 
 

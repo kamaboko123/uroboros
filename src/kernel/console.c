@@ -102,6 +102,10 @@ void console_exec(Console *con, char *line){
         Process *p = proc_alloc();
         ktask_init(p, "task_b", (uint32_t)task_b, 0);
     }
+    else if(strcmp(cmd.command, "task_syscall") == 0){
+        Process *p = proc_alloc();
+        ktask_init(p, "task_syscall", (uint32_t)task_syscall, 0);
+    }
     else if(strcmp(cmd.command, "timers") == 0){
         for(Timer *t = sys->timerctl->t; t != NULL; t=t->next){
             if(t->interval == 0) continue;

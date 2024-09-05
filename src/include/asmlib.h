@@ -21,4 +21,5 @@ bool load_int_flag(void);
 void store_int_flag(bool int_flag);
 void int_handler_null(void);
 
+void int80h(void);
 #endif

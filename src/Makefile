@@ -39,8 +39,9 @@ RUST_BUILD_CMD = cargo build --lib -Zbuild-std=std,panic_abort $(cargo_build_mod
 KERNEL_RUST_SRC_DIR = kernel/rust
 KERNEL_RUST_SRC = $(wildcard $(KERNEL_RUST_SRC_DIR)/src/*.rs)
 KERNEL_RUST_OBJ_DIR = $(TARGET_DIR)/rust
-KERNEL_RUST_OBJ = $(KERNEL_RUST_OBJ_DIR)/$(RUST_LIB_NAME).a
-#KERNEL_RUST_OBJ=
+# KERNEL_RUST_OBJ = $(KERNEL_RUST_OBJ_DIR)/$(RUST_LIB_NAME).a
+# Rustで書いたコードの組み込みは一旦やめる
+KERNEL_RUST_OBJ=
 
 
 KERNEL = $(TARGET_DIR)/kernel.bin
@@ -58,6 +59,8 @@ FONT = font/bin/hankaku.o
 QEMU = qemu-system-x86_64
 
 BOCHS_CONF = bochs.conf
+
+APP_DISK_IMG = app/bin/app_disk.img
 
 
 all : clean $(IMG)
@@ -101,11 +104,14 @@ $(IMG) : $(IPL) $(KERNEL_IMG)
 	mformat -f 1440 -B $(IPL) -C -i $@ ::
 	mcopy $(KERNEL_IMG) -i $@ ::
 
-run: $(IMG)
-	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy,index=0 -serial stdio
+$(APP_DISK_IMG) :
+	cd app; make
+
+run: $(IMG) $(APP_DISK_IMG)
+	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy,index=0 -drive format=raw,file=$(APP_DISK_IMG),if=floppy,index=1 -serial stdio
 
 debug: $(IMG)
-	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy,index=0 -serial stdio -S -gdb tcp::10000
+	$(QEMU) -m 128M -drive format=raw,file=$(IMG),if=floppy,index=0 -drive format=raw,file=$(APP_DISK_IMG),if=floppy,index=1 -serial stdio -S -gdb tcp::10000
 
 run_bochs:
 	bochs -f $(BOCHS_CONF)
@@ -115,6 +121,7 @@ debug_bochs:
 
 clean:
 	rm -rf $(TARGET_DIR)
+	cd app; make clean
 
 clean_all:
 	rm -rf $(TARGET_DIR)

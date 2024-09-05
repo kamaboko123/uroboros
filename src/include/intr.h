@@ -88,4 +88,6 @@ void pic_eoi(uint8_t irq);
 
 void int_handler(IntrFrame iframe);
 
+#define INTR_NUM_SYSCALL 0x80
+
 #endif

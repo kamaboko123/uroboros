@@ -180,3 +180,8 @@ go_ring3:
     iret
 
 
+;void interrupt(uint32_t int_no)
+global int80h
+int80h:
+    int 0x80
+    ret

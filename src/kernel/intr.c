@@ -126,6 +126,13 @@ void int_handler(IntrFrame iframe){
         sys->fdc_intr = true;
         pic_eoi(PIC_IRQ6);
     }
+    else if(iframe.intrnum == INTR_NUM_SYSCALL){
+        // システムコール
+        // syscall_handler(iframe);
+        char str[64];
+        sprintf(str, "!! SYSCALL !!\n");
+        serial_putstr(str);
+    }
     else if(iframe.intrnum <= 0x1f){
         char str[64];
 
